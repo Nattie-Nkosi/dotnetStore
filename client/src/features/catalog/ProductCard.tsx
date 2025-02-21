@@ -24,6 +24,7 @@ export default function ProductCard({ product }: Props) {
       elevation={3}
       sx={{
         height: "100%",
+        width: 280,
         display: "flex",
         flexDirection: "column",
         position: "relative",
@@ -37,6 +38,7 @@ export default function ProductCard({ product }: Props) {
       <CardMedia
         sx={{
           height: 240,
+          width: "100%",
           backgroundSize: "contain",
           backgroundColor: isDarkMode ? "background.default" : "#f5f5f5",
           p: 2,

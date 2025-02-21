@@ -1,6 +1,3 @@
-// App.tsx
-import { useEffect, useState } from "react";
-import { Product } from "../models/product";
 import {
   Box,
   Container,
@@ -10,10 +7,10 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import NavBar from "./NavBar";
-import Catalog from "../../features/catalog/Catalog";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
 
 function App() {
-  const [products, setProducts] = useState<Product[]>([]);
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [darkMode, setDarkMode] = useState(prefersDarkMode);
 
@@ -67,12 +64,6 @@ function App() {
     },
   });
 
-  useEffect(() => {
-    fetch("https://localhost:5001/api/products")
-      .then((response) => response.json())
-      .then((data) => setProducts(data));
-  }, []);
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -92,8 +83,8 @@ function App() {
             pb: 6,
           }}
         >
-          <Container maxWidth="lg" sx={{ mt: 4 }}>
-            <Catalog products={products} />
+          <Container maxWidth="lg" sx={{ mt: 8 }}>
+            <Outlet />
           </Container>
         </Box>
       </Box>
