@@ -1,9 +1,10 @@
+import { Button } from "@mui/material";
 import { Product } from "../../app/models/product";
 
-interface ProductProps {
+type ProductProps = {
   products: Product[];
   addProduct: () => void;
-}
+};
 
 export default function Catalog({ products, addProduct }: ProductProps) {
   return (
@@ -15,7 +16,9 @@ export default function Catalog({ products, addProduct }: ProductProps) {
           </li>
         ))}
       </ul>
-      <button onClick={addProduct}>Add</button>
+      <Button variant="contained" onClick={addProduct}>
+        Add Product
+      </Button>
     </>
   );
 }
