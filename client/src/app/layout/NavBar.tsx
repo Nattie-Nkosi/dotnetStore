@@ -3,6 +3,8 @@ import {
   Badge,
   Box,
   IconButton,
+  List,
+  ListItem,
   Toolbar,
   Typography,
   useTheme,
@@ -10,6 +12,18 @@ import {
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { NavLink } from "react-router-dom";
+
+const midLinks = [
+  { title: "catalog", path: "/catalog" },
+  { title: "about", path: "/about" },
+  { title: "contact", path: "/contact" },
+];
+
+const rightLinks = [
+  { title: "login", path: "/login" },
+  { title: "register", path: "/register" },
+];
 
 interface Props {
   darkMode: boolean;
@@ -30,6 +44,8 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <Typography
+          component={NavLink}
+          to="/"
           variant="h6"
           sx={{
             color: theme.palette.text.primary,
@@ -38,7 +54,30 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
         >
           Dotnet-Store
         </Typography>
-
+        <List sx={{ display: "flex", gap: 2 }}>
+          {midLinks.map(({ title, path }) => (
+            <ListItem
+              component={NavLink}
+              to={path}
+              key={path}
+              sx={{ color: theme.palette.text.primary, typography: "h6" }}
+            >
+              {title.toUpperCase()}
+            </ListItem>
+          ))}
+        </List>
+        <List sx={{ display: "flex", gap: 2 }}>
+          {rightLinks.map(({ title, path }) => (
+            <ListItem
+              component={NavLink}
+              to={path}
+              key={path}
+              sx={{ color: theme.palette.text.primary, typography: "h6" }}
+            >
+              {title.toUpperCase()}
+            </ListItem>
+          ))}
+        </List>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton onClick={onThemeChange}>
             {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
