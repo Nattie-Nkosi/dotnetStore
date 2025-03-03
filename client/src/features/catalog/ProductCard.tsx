@@ -10,6 +10,7 @@ import {
 import { Product } from "../../app/models/product";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { Link } from "react-router-dom";
 
 type Props = {
   product: Product;
@@ -90,6 +91,8 @@ export default function ProductCard({ product }: Props) {
             Add to Cart
           </Button>
           <IconButton
+            component={Link}
+            to={`/catalog/${product.id}`}
             size="small"
             sx={{
               border: 1,
