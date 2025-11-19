@@ -7,9 +7,17 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./app/routes/Routes.tsx";
+import { Provider } from "react-redux";
+import { configureTheStore } from "./app/store/store.ts";
+
+const store = configureTheStore();
+
+console.log("Store configured:", store.getState());
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
   </StrictMode>
 );
