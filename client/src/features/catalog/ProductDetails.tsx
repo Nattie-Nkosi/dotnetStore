@@ -18,9 +18,9 @@ import {
   Stack,
   Breadcrumbs,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Product } from "../../app/models/product";
+import { useFetchProductDetailsQuery } from "./catalogApi";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
@@ -31,33 +31,11 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: product, isLoading } = useFetchProductDetailsQuery(Number(id));
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState(0);
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === "dark";
-
-  useEffect(() => {
-    if (id) {
-      setLoading(true);
-      fetch(`https://localhost:5001/api/products/${id}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Product not found");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setProduct(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching product:", error);
-          setLoading(false);
-        });
-    }
-  }, [id]);
 
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
@@ -75,7 +53,7 @@ export default function ProductDetails() {
     setActiveTab(newValue);
   };
 
-  if (loading) {
+  if (isLoading) {
     return <ProductDetailsSkeleton />;
   }
 

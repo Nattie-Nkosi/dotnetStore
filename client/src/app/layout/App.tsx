@@ -4,15 +4,16 @@ import {
   createTheme,
   CssBaseline,
   ThemeProvider,
-  useMediaQuery,
 } from "@mui/material";
 import NavBar from "./NavBar";
-import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import LoadingIndicator from "./LoadingIndicator";
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { toggleDarkMode } from "../store/uiSlice";
 
 function App() {
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const [darkMode, setDarkMode] = useState(prefersDarkMode);
+  const darkMode = useAppSelector((state) => state.ui.darkMode);
+  const dispatch = useAppDispatch();
 
   const theme = createTheme({
     palette: {
@@ -67,12 +68,13 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <LoadingIndicator />
       <Box
         sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
         <NavBar
           darkMode={darkMode}
-          onThemeChange={() => setDarkMode(!darkMode)}
+          onThemeChange={() => dispatch(toggleDarkMode())}
         />
         <Box
           component="main"
