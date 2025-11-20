@@ -10,6 +10,8 @@ import { Outlet } from "react-router-dom";
 import LoadingIndicator from "./LoadingIndicator";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { toggleDarkMode } from "../store/uiSlice";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const darkMode = useAppSelector((state) => state.ui.darkMode);
@@ -68,6 +70,11 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <ToastContainer
+        position="bottom-right"
+        theme={darkMode ? "dark" : "light"}
+        aria-label={undefined}
+      />
       <LoadingIndicator />
       <Box
         sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
