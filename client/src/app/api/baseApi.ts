@@ -29,7 +29,11 @@ export const baseQueryWithErrorHandling: BaseQueryFn<
     const status = result.error.status;
     const errorData = result.error.data as ProblemDetails | undefined;
 
-    if (status === 400) {
+    if (status === "FETCH_ERROR") {
+      toast.error("Network Error: Unable to connect to the server. Please check if the server is running.", {
+        autoClose: 5000,
+      });
+    } else if (status === 400) {
       toast.error(`400 Bad Request: ${errorData?.title || "Bad request error"}`, {
         autoClose: 5000,
       });
