@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   AppBar,
   Badge,
@@ -22,6 +21,7 @@ import Brightness7Icon from "@mui/icons-material/Brightness7";
 import MenuIcon from "@mui/icons-material/Menu";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
+import { useFetchBasketQuery } from "../../features/basket/basketApi";
 
 const midLinks = [
   { title: "catalog", path: "/catalog" },
@@ -43,30 +43,9 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: basket } = useFetchBasketQuery();
 
-  // Function to determine if a nav link is active
-  const getActiveStyle = (isActive: boolean) => ({
-    color: isActive ? theme.palette.primary.main : theme.palette.text.primary,
-    fontWeight: isActive ? 600 : 500,
-    textDecoration: "none",
-    position: "relative",
-    "&::after": isActive
-      ? {
-          content: '""',
-          position: "absolute",
-          bottom: -2,
-          left: 0,
-          width: "100%",
-          height: 3,
-          borderRadius: "4px 4px 0 0",
-          backgroundColor: theme.palette.primary.main,
-        }
-      : {},
-    transition: "all 0.2s ease-in-out",
-    "&:hover": {
-      color: theme.palette.primary.main,
-    },
-  });
+  const itemCount = basket?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   // Mobile drawer toggle
   const toggleMobileMenu = () => {
@@ -139,7 +118,30 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                     component={NavLink}
                     to={path}
                     key={path}
-                    sx={({ isActive }) => getActiveStyle(isActive)}
+                    sx={(theme) => ({
+                      color: theme.palette.text.primary,
+                      fontWeight: 500,
+                      textDecoration: "none",
+                      position: "relative",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        color: theme.palette.primary.main,
+                      },
+                      "&.active": {
+                        color: theme.palette.primary.main,
+                        fontWeight: 600,
+                        "&::after": {
+                          content: '""',
+                          position: "absolute",
+                          bottom: -2,
+                          left: 0,
+                          width: "100%",
+                          height: 3,
+                          borderRadius: "4px 4px 0 0",
+                          backgroundColor: theme.palette.primary.main,
+                        },
+                      },
+                    })}
                   >
                     {title.charAt(0).toUpperCase() + title.slice(1)}
                   </Typography>
@@ -154,10 +156,23 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                     key={path}
                     variant={title === "register" ? "contained" : "text"}
                     size="small"
-                    sx={({ isActive }) => ({
-                      ...(title !== "register" && getActiveStyle(isActive)),
+                    sx={(theme) => ({
                       textTransform: "none",
                       minWidth: title === "register" ? "auto" : "unset",
+                      ...(title !== "register" && {
+                        color: theme.palette.text.primary,
+                        fontWeight: 500,
+                        textDecoration: "none",
+                        position: "relative",
+                        transition: "all 0.2s ease-in-out",
+                        "&:hover": {
+                          color: theme.palette.primary.main,
+                        },
+                        "&.active": {
+                          color: theme.palette.primary.main,
+                          fontWeight: 600,
+                        },
+                      }),
                     })}
                   >
                     {title.charAt(0).toUpperCase() + title.slice(1)}
@@ -197,7 +212,7 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                     },
                   }}
                 >
-                  <Badge badgeContent={4} color="secondary">
+                  <Badge badgeContent={itemCount} color="secondary">
                     <ShoppingCartIcon fontSize="small" />
                   </Badge>
                 </IconButton>
@@ -232,26 +247,29 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                 to={path}
                 key={path}
                 onClick={toggleMobileMenu}
-                sx={({ isActive }) => ({
+                sx={{
                   borderRadius: 2,
                   mb: 1,
-                  backgroundColor: isActive
-                    ? alpha(theme.palette.primary.main, 0.1)
-                    : "transparent",
+                  backgroundColor: "transparent",
                   "&:hover": {
                     backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   },
-                })}
+                  "&.active": {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }}
               >
                 <ListItemText
                   primary={title.charAt(0).toUpperCase() + title.slice(1)}
                   primaryTypographyProps={{
-                    sx: ({ isActive }: any) => ({
-                      fontWeight: isActive ? 600 : 500,
-                      color: isActive
-                        ? theme.palette.primary.main
-                        : theme.palette.text.primary,
-                    }),
+                    sx: {
+                      fontWeight: 500,
+                      color: theme.palette.text.primary,
+                      ".active &": {
+                        fontWeight: 600,
+                        color: theme.palette.primary.main,
+                      },
+                    },
                   }}
                 />
               </ListItem>
@@ -270,26 +288,29 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                 to={path}
                 key={path}
                 onClick={toggleMobileMenu}
-                sx={({ isActive }) => ({
+                sx={{
                   borderRadius: 2,
                   mb: 1,
-                  backgroundColor: isActive
-                    ? alpha(theme.palette.primary.main, 0.1)
-                    : "transparent",
+                  backgroundColor: "transparent",
                   "&:hover": {
                     backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   },
-                })}
+                  "&.active": {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }}
               >
                 <ListItemText
                   primary={title.charAt(0).toUpperCase() + title.slice(1)}
                   primaryTypographyProps={{
-                    sx: ({ isActive }: any) => ({
-                      fontWeight: isActive ? 600 : 500,
-                      color: isActive
-                        ? theme.palette.primary.main
-                        : theme.palette.text.primary,
-                    }),
+                    sx: {
+                      fontWeight: 500,
+                      color: theme.palette.text.primary,
+                      ".active &": {
+                        fontWeight: 600,
+                        color: theme.palette.primary.main,
+                      },
+                    },
                   }}
                 />
               </ListItem>
@@ -312,7 +333,7 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
               )}
             </IconButton>
             <IconButton component={NavLink} to="/basket" onClick={toggleMobileMenu}>
-              <Badge badgeContent={4} color="secondary">
+              <Badge badgeContent={itemCount} color="secondary">
                 <ShoppingCartIcon fontSize="small" />
               </Badge>
             </IconButton>

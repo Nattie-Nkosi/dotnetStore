@@ -6,8 +6,6 @@ import {
   Grid,
   Paper,
   Skeleton,
-  Tab,
-  Tabs,
   TextField,
   Typography,
   useTheme,
@@ -18,12 +16,19 @@ import {
   Stack,
   Breadcrumbs,
   CircularProgress,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useFetchProductDetailsQuery } from "./catalogApi";
-import { useAddBasketItemMutation } from "../basket/basketApi";
+import { useAddBasketItemMutation, useFetchBasketQuery, useRemoveBasketItemMutation } from "../basket/basketApi";
 import { toast } from "react-toastify";
+import { isFetchBaseQueryError, isErrorWithMessage } from "../../app/utils/typeGuards";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
@@ -31,15 +36,30 @@ import HomeIcon from "@mui/icons-material/Home";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import VerifiedUserOutlined from "@mui/icons-material/VerifiedUserOutlined";
+import LocalOfferOutlined from "@mui/icons-material/LocalOfferOutlined";
+import CheckCircleOutline from "@mui/icons-material/CheckCircleOutline";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading } = useFetchProductDetailsQuery(Number(id));
+  const { data: basket } = useFetchBasketQuery();
   const [addItem, { isLoading: isAddingToCart }] = useAddBasketItemMutation();
+  const [removeItem] = useRemoveBasketItemMutation();
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState(0);
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === "dark";
+
+  // Check if product is in basket and get its quantity
+  const itemInBasket = basket?.items.find(item => item.productId === Number(id));
+  const isInCart = !!itemInBasket;
+
+  // Set quantity from basket when product is loaded or basket changes
+  useEffect(() => {
+    if (itemInBasket) {
+      setQuantity(itemInBasket.quantity);
+    }
+  }, [itemInBasket]);
 
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
@@ -51,19 +71,46 @@ export default function ProductDetails() {
   const handleAddToCart = async () => {
     if (product) {
       try {
-        await addItem({ productId: product.id, quantity }).unwrap();
-        toast.success(`${quantity} x ${product.name} added to cart!`, {
-          autoClose: 3000,
-        });
+        if (isInCart && itemInBasket) {
+          // Product is in cart - update quantity
+          const quantityDifference = quantity - itemInBasket.quantity;
+
+          if (quantityDifference === 0) {
+            toast.info("Quantity unchanged", { autoClose: 2000 });
+            return;
+          }
+
+          if (quantityDifference > 0) {
+            // Need to add more
+            await addItem({ productId: product.id, quantity: quantityDifference }).unwrap();
+            toast.success(`Cart updated! Quantity increased to ${quantity}`, {
+              autoClose: 3000,
+            });
+          } else {
+            // Need to remove some
+            await removeItem({ productId: product.id, quantity: Math.abs(quantityDifference) }).unwrap();
+            toast.success(`Cart updated! Quantity decreased to ${quantity}`, {
+              autoClose: 3000,
+            });
+          }
+        } else {
+          // Product not in cart - add new
+          await addItem({ productId: product.id, quantity }).unwrap();
+          toast.success(`${quantity} x ${product.name} added to cart!`, {
+            autoClose: 3000,
+          });
+        }
       } catch (error) {
-        // Error is already handled by baseApi
-        console.error("Failed to add item to cart:", error);
+        if (isFetchBaseQueryError(error)) {
+          const errorMessage = "data" in error ? String(error.data) : error.status;
+          console.error("Failed to update cart:", errorMessage);
+        } else if (isErrorWithMessage(error)) {
+          console.error("Failed to update cart:", error.message);
+        } else {
+          console.error("Failed to update cart:", error);
+        }
       }
     }
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
   };
 
   if (isLoading) {
@@ -132,9 +179,9 @@ export default function ProductDetails() {
         {/* Product Image */}
         <Grid item xs={12} md={6}>
           <Paper
-            elevation={1}
+            elevation={2}
             sx={{
-              borderRadius: 3,
+              borderRadius: 2,
               overflow: "hidden",
               backgroundColor: isDarkMode
                 ? alpha(theme.palette.background.paper, 0.6)
@@ -144,16 +191,43 @@ export default function ProductDetails() {
               justifyContent: "center",
               alignItems: "center",
               height: "100%",
-              minHeight: 400,
+              minHeight: 500,
+              position: "relative",
             }}
           >
+            {/* Stock Badge */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 16,
+                left: 16,
+                zIndex: 1,
+              }}
+            >
+              {product.quantityInStock > 0 ? (
+                <Chip
+                  label="In Stock"
+                  size="medium"
+                  color="success"
+                  sx={{ fontWeight: 600 }}
+                />
+              ) : (
+                <Chip
+                  label="Out of Stock"
+                  size="medium"
+                  color="error"
+                  sx={{ fontWeight: 600 }}
+                />
+              )}
+            </Box>
+
             <Box
               component="img"
               src={product.pictureUrl}
               alt={product.name}
               sx={{
                 maxWidth: "100%",
-                maxHeight: "400px",
+                maxHeight: "450px",
                 objectFit: "contain",
               }}
             />
@@ -163,35 +237,7 @@ export default function ProductDetails() {
         {/* Product Details */}
         <Grid item xs={12} md={6}>
           <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-              }}
-            >
-              <Typography variant="h4" fontWeight={600} gutterBottom>
-                {product.name}
-              </Typography>
-              <Button
-                component={Link}
-                to="/catalog"
-                startIcon={<ArrowBackIcon />}
-                size="small"
-                sx={{ mt: 1 }}
-              >
-                Back
-              </Button>
-            </Box>
-
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-              <Rating value={4.5} precision={0.5} readOnly size="small" />
-              <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                4.5 (24 reviews)
-              </Typography>
-            </Box>
-
-            <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
               <Chip
                 label={product.brand}
                 size="small"
@@ -199,48 +245,94 @@ export default function ProductDetails() {
                 variant="outlined"
               />
               <Chip label={product.type} size="small" variant="outlined" />
-              {product.quantityInStock > 0 ? (
-                <Chip label="In Stock" size="small" color="success" />
-              ) : (
-                <Chip label="Out of Stock" size="small" color="error" />
-              )}
             </Stack>
 
-            <Typography
-              variant="h5"
-              color="primary"
-              fontWeight={600}
-              gutterBottom
-              sx={{ mb: 3 }}
-            >
-              R{(product.price / 100).toFixed(2)}
+            <Typography variant="h3" fontWeight={700} gutterBottom>
+              {product.name}
             </Typography>
 
-            <Typography variant="body1" paragraph sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+              <Rating value={4.5} precision={0.5} readOnly />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                4.5 (24 reviews)
+              </Typography>
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h3" color="primary" fontWeight={700}>
+                R{(product.price / 100).toFixed(2)}
+              </Typography>
+              {product.price >= 50000 && (
+                <Chip
+                  icon={<LocalShippingIcon />}
+                  label="Free Delivery"
+                  color="success"
+                  size="small"
+                  sx={{ mt: 1, fontWeight: 600 }}
+                />
+              )}
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Typography variant="body1" color="text.secondary" paragraph>
               {product.description ||
-                "No description available for this product."}
+                "Premium quality product designed to meet your needs. Crafted with attention to detail and built to last."}
             </Typography>
 
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                mb: 3,
-                gap: 2,
-              }}
-            >
-              <TextField
-                label="Quantity"
-                type="number"
-                value={quantity}
-                onChange={handleQuantityChange}
-                InputProps={{
-                  inputProps: { min: 1, max: product.quantityInStock },
-                }}
-                size="small"
-                sx={{ width: 100 }}
-              />
+            <Card sx={{ mb: 3, bgcolor: "action.hover" }}>
+              <CardContent>
+                <List dense>
+                  <ListItem>
+                    <ListItemIcon>
+                      <CheckCircleOutline color="success" />
+                    </ListItemIcon>
+                    <ListItemText primary={`${product.quantityInStock} units available`} />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <LocalShippingIcon color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary="Free shipping on orders over R500" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <VerifiedUserOutlined color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary="1 year manufacturer warranty" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <LocalOfferOutlined color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary="Best price guarantee" />
+                  </ListItem>
+                </List>
+              </CardContent>
+            </Card>
 
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" gutterBottom fontWeight={600}>
+                Quantity
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <TextField
+                  type="number"
+                  value={quantity}
+                  onChange={handleQuantityChange}
+                  InputProps={{
+                    inputProps: { min: 1, max: product.quantityInStock },
+                  }}
+                  size="medium"
+                  sx={{ width: 120 }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  {product.quantityInStock} available
+                </Typography>
+              </Box>
+            </Box>
+
+            <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
               <Button
                 variant="contained"
                 size="large"
@@ -254,13 +346,17 @@ export default function ProductDetails() {
                 }
                 onClick={handleAddToCart}
                 sx={{
-                  px: 4,
-                  borderRadius: 2,
-                  fontWeight: 500,
+                  flex: 1,
+                  py: 1.5,
+                  fontSize: "1.1rem",
+                  fontWeight: 600,
                   textTransform: "none",
                 }}
               >
-                {isAddingToCart ? "Adding..." : "Add to Cart"}
+                {isAddingToCart
+                  ? (isInCart ? "Updating..." : "Adding...")
+                  : (isInCart ? "Update Quantity" : "Add to Cart")
+                }
               </Button>
 
               <Button
@@ -268,130 +364,93 @@ export default function ProductDetails() {
                 size="large"
                 startIcon={<FavoriteBorderIcon />}
                 sx={{
-                  borderRadius: 2,
-                  fontWeight: 500,
+                  px: 3,
+                  py: 1.5,
+                  fontWeight: 600,
                   textTransform: "none",
                 }}
               >
                 Wishlist
               </Button>
-            </Box>
+            </Stack>
 
-            <Box
-              sx={{
-                mb: 3,
-                display: "flex",
-                alignItems: "center",
-                color: "text.secondary",
-              }}
+            <Button
+              component={Link}
+              to="/catalog"
+              startIcon={<ArrowBackIcon />}
+              fullWidth
+              variant="text"
+              sx={{ textTransform: "none" }}
             >
-              <LocalShippingIcon fontSize="small" sx={{ mr: 1 }} />
-              <Typography variant="body2">
-                Free shipping on orders over R500
-              </Typography>
-            </Box>
-
-            <Divider sx={{ mb: 3 }} />
-
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                SKU: {product.id.toString().padStart(6, "0")}
-              </Typography>
-              <Typography variant="subtitle2" gutterBottom>
-                Available: {product.quantityInStock} in stock
-              </Typography>
-              <Typography variant="subtitle2">
-                Category: {product.type}
-              </Typography>
-            </Box>
+              Continue Shopping
+            </Button>
           </Box>
         </Grid>
       </Grid>
 
-      {/* Product tabs section */}
-      <Paper sx={{ mt: 6, borderRadius: 3, overflow: "hidden" }} elevation={1}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          aria-label="product information tabs"
-          sx={{
-            borderBottom: 1,
-            borderColor: "divider",
-            "& .MuiTabs-indicator": {
-              height: 3,
-              borderRadius: "3px 3px 0 0",
-            },
-          }}
-        >
-          <Tab label="Description" id="tab-0" />
-          <Tab label="Specifications" id="tab-1" />
-          <Tab label="Reviews" id="tab-2" />
-        </Tabs>
-
-        {/* Tab content */}
-        <Box p={3} role="tabpanel" hidden={activeTab !== 0}>
-          {activeTab === 0 && (
-            <Typography variant="body1">
+      {/* Product Information */}
+      <Grid container spacing={3} sx={{ mt: 4 }}>
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 3, borderRadius: 2 }} elevation={1}>
+            <Typography variant="h5" fontWeight={600} gutterBottom>
+              Product Description
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Typography variant="body1" color="text.secondary" paragraph>
               {product.description ||
                 "No detailed description available for this product."}
-              <br />
-              <br />
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-              facilisi. Nulla facilisi. Mauris vel mauris vel tortor finibus
-              elementum. Quisque sit amet metus vel risus efficitur faucibus.
-              Donec convallis, purus in imperdiet pharetra, arcu sem pharetra
-              sapien, non interdum nulla purus et velit.
             </Typography>
-          )}
-        </Box>
-
-        <Box p={3} role="tabpanel" hidden={activeTab !== 1}>
-          {activeTab === 1 && (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">Brand</Typography>
-                <Typography variant="body1" paragraph>
-                  {product.brand}
-                </Typography>
-
-                <Typography variant="subtitle2">Type</Typography>
-                <Typography variant="body1" paragraph>
-                  {product.type}
-                </Typography>
-
-                <Typography variant="subtitle2">Material</Typography>
-                <Typography variant="body1" paragraph>
-                  Premium quality
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">Dimensions</Typography>
-                <Typography variant="body1" paragraph>
-                  Standard
-                </Typography>
-
-                <Typography variant="subtitle2">Weight</Typography>
-                <Typography variant="body1" paragraph>
-                  0.5 kg
-                </Typography>
-
-                <Typography variant="subtitle2">Warranty</Typography>
-                <Typography variant="body1" paragraph>
-                  1 year manufacturer warranty
-                </Typography>
-              </Grid>
-            </Grid>
-          )}
-        </Box>
-
-        <Box p={3} role="tabpanel" hidden={activeTab !== 2}>
-          {activeTab === 2 && (
-            <Typography variant="body1">
-              No reviews yet. Be the first to review this product!
+            <Typography variant="body1" color="text.secondary">
+              This premium product is designed with quality and durability in mind.
+              Perfect for everyday use and built to withstand the test of time.
+              Each item is carefully crafted to ensure you receive the best value for your investment.
             </Typography>
-          )}
-        </Box>
-      </Paper>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 3, borderRadius: 2 }} elevation={1}>
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              Product Details
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                SKU:
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                {product.id.toString().padStart(6, "0")}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                Brand:
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                {product.brand}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                Category:
+              </Typography>
+              <Typography variant="body2" fontWeight={500}>
+                {product.type}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                Availability:
+              </Typography>
+              <Chip
+                label={product.quantityInStock > 0 ? "In Stock" : "Out of Stock"}
+                size="small"
+                color={product.quantityInStock > 0 ? "success" : "error"}
+              />
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
     </Container>
   );
 }
