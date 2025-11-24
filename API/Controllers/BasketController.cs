@@ -1,5 +1,7 @@
 using API.Data;
+using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,15 +12,15 @@ namespace API.Controllers
 		private readonly StoreContext context = context;
 
 		[HttpGet(Name = "GetBasket")]
-		public async Task<ActionResult<Basket>> GetBasket()
+		public async Task<ActionResult<BasketDto>> GetBasket()
 		{
 			var basket = await RetrieveBasket();
 			if (basket == null) return NoContent();
-			return basket;
+			return basket.MapBasketToDto();
 		}
 
 		[HttpPost]
-		public async Task<ActionResult<Basket>> AddItemToBasket(int productId, int quantity)
+		public async Task<ActionResult<BasketDto>> AddItemToBasket(int productId, int quantity)
 		{
 			var basket = await RetrieveBasket() ?? CreateBasket();
 			var product = await context.Products.FindAsync(productId);
@@ -27,7 +29,7 @@ namespace API.Controllers
 			basket.AddItem(product, quantity);
 			var result = await context.SaveChangesAsync() > 0;
 
-			if (result) return CreatedAtRoute("GetBasket", basket);
+			if (result) return CreatedAtRoute("GetBasket", basket.MapBasketToDto());
 			return BadRequest(new ProblemDetails { Title = "Problem saving item to basket" });
 		}
 
@@ -35,7 +37,7 @@ namespace API.Controllers
 		public async Task<ActionResult> RemoveBasketItem(int productId, int quantity)
 		{
 			var basket = await RetrieveBasket();
-			if (basket == null) return NotFound();
+			if (basket == null) return BadRequest("Basket not found");
 
 			basket.RemoveItem(productId, quantity);
 			var result = await context.SaveChangesAsync() > 0;
