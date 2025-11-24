@@ -6,11 +6,14 @@ import {
   Box,
   IconButton,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import { Product } from "../../app/models/product";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { Link } from "react-router-dom";
+import { useAddBasketItemMutation } from "../basket/basketApi";
+import { toast } from "react-toastify";
 
 type Props = {
   product: Product;
@@ -19,6 +22,19 @@ type Props = {
 export default function ProductCard({ product }: Props) {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === "dark";
+  const [addItem, { isLoading }] = useAddBasketItemMutation();
+
+  const handleAddToCart = async () => {
+    try {
+      await addItem({ productId: product.id, quantity: 1 }).unwrap();
+      toast.success(`${product.name} added to cart!`, {
+        autoClose: 3000,
+      });
+    } catch (error) {
+      // Error is already handled by baseApi
+      console.error("Failed to add item to cart:", error);
+    }
+  };
 
   return (
     <Card
@@ -78,7 +94,15 @@ export default function ProductCard({ product }: Props) {
           <Button
             variant="contained"
             fullWidth
-            startIcon={<ShoppingCartIcon />}
+            disabled={isLoading}
+            startIcon={
+              isLoading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <ShoppingCartIcon />
+              )
+            }
+            onClick={handleAddToCart}
             sx={{
               borderRadius: "8px",
               textTransform: "none",
@@ -88,7 +112,7 @@ export default function ProductCard({ product }: Props) {
               },
             }}
           >
-            Add to Cart
+            {isLoading ? "Adding..." : "Add to Cart"}
           </Button>
           <IconButton
             component={Link}

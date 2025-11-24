@@ -187,6 +187,8 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                 </IconButton>
 
                 <IconButton
+                  component={NavLink}
+                  to="/basket"
                   size="small"
                   sx={{
                     bgcolor: alpha(theme.palette.secondary.main, 0.1),
@@ -309,7 +311,7 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                 <Brightness4Icon fontSize="small" />
               )}
             </IconButton>
-            <IconButton>
+            <IconButton component={NavLink} to="/basket" onClick={toggleMobileMenu}>
               <Badge badgeContent={4} color="secondary">
                 <ShoppingCartIcon fontSize="small" />
               </Badge>

@@ -17,10 +17,13 @@ import {
   Chip,
   Stack,
   Breadcrumbs,
+  CircularProgress,
 } from "@mui/material";
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useFetchProductDetailsQuery } from "./catalogApi";
+import { useAddBasketItemMutation } from "../basket/basketApi";
+import { toast } from "react-toastify";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
@@ -32,6 +35,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading } = useFetchProductDetailsQuery(Number(id));
+  const [addItem, { isLoading: isAddingToCart }] = useAddBasketItemMutation();
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState(0);
   const theme = useTheme();
@@ -44,9 +48,18 @@ export default function ProductDetails() {
     }
   };
 
-  const handleAddToCart = () => {
-    // Implement add to cart functionality
-    alert(`Added ${quantity} x ${product?.name} to cart`);
+  const handleAddToCart = async () => {
+    if (product) {
+      try {
+        await addItem({ productId: product.id, quantity }).unwrap();
+        toast.success(`${quantity} x ${product.name} added to cart!`, {
+          autoClose: 3000,
+        });
+      } catch (error) {
+        // Error is already handled by baseApi
+        console.error("Failed to add item to cart:", error);
+      }
+    }
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -231,9 +244,15 @@ export default function ProductDetails() {
               <Button
                 variant="contained"
                 size="large"
-                startIcon={<ShoppingCartIcon />}
+                disabled={product.quantityInStock === 0 || isAddingToCart}
+                startIcon={
+                  isAddingToCart ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <ShoppingCartIcon />
+                  )
+                }
                 onClick={handleAddToCart}
-                disabled={product.quantityInStock === 0}
                 sx={{
                   px: 4,
                   borderRadius: 2,
@@ -241,7 +260,7 @@ export default function ProductDetails() {
                   textTransform: "none",
                 }}
               >
-                Add to Cart
+                {isAddingToCart ? "Adding..." : "Add to Cart"}
               </Button>
 
               <Button

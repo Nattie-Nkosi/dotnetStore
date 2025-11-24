@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { catalogApi } from "../../features/catalog/catalogApi";
+import { basketApi } from "../../features/basket/basketApi";
 
 interface UiState {
   isLoading: boolean;
@@ -49,6 +50,24 @@ export const uiSlice = createSlice({
         state.isLoading = false;
       })
       .addMatcher(catalogApi.endpoints.fetchProductDetails.matchRejected, (state) => {
+        state.isLoading = false;
+      })
+      .addMatcher(basketApi.endpoints.addBasketItem.matchPending, (state) => {
+        state.isLoading = true;
+      })
+      .addMatcher(basketApi.endpoints.addBasketItem.matchFulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addMatcher(basketApi.endpoints.addBasketItem.matchRejected, (state) => {
+        state.isLoading = false;
+      })
+      .addMatcher(basketApi.endpoints.removeBasketItem.matchPending, (state) => {
+        state.isLoading = true;
+      })
+      .addMatcher(basketApi.endpoints.removeBasketItem.matchFulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addMatcher(basketApi.endpoints.removeBasketItem.matchRejected, (state) => {
         state.isLoading = false;
       });
   },

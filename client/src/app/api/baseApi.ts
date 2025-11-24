@@ -16,6 +16,7 @@ interface ProblemDetails {
 
 const customBaseQuery = fetchBaseQuery({
   baseUrl: "https://localhost:5001/api/",
+  credentials: "include",
 });
 
 export const baseQueryWithErrorHandling: BaseQueryFn<
