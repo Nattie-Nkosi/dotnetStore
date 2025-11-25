@@ -1,4 +1,11 @@
-import { Box, Alert, Grid, Paper, Typography, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Alert,
+  Grid,
+  Paper,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import ProductList from "./ProductList";
 import Filters from "./Filters";
 import Search from "./Search";
@@ -12,7 +19,11 @@ export default function Catalog() {
   const dispatch = useAppDispatch();
   const productParams = useAppSelector((state) => state.catalog.productParams);
 
-  const { data: products = [], error, isLoading } = useFetchProductsQuery(productParams);
+  const {
+    data: products = [],
+    error,
+    isLoading,
+  } = useFetchProductsQuery(productParams);
   const { data: filters } = useFetchFiltersQuery();
 
   const handleBrandChange = (brand: string) => {
