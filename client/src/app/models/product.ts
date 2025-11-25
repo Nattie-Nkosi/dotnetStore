@@ -8,3 +8,17 @@ export type Product = {
 	brand: string
 	quantityInStock: number
 }
+
+export interface ProductParams {
+	orderBy?: string;
+	searchTerm?: string;
+	types?: string;
+	brands?: string;
+	pageNumber?: number;
+	pageSize?: number;
+}
+
+export interface Filters {
+	brands: string[];
+	types: string[];
+}
