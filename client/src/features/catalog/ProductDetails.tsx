@@ -26,9 +26,16 @@ import {
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useFetchProductDetailsQuery } from "./catalogApi";
-import { useAddBasketItemMutation, useFetchBasketQuery, useRemoveBasketItemMutation } from "../basket/basketApi";
+import {
+  useAddBasketItemMutation,
+  useFetchBasketQuery,
+  useRemoveBasketItemMutation,
+} from "../basket/basketApi";
 import { toast } from "react-toastify";
-import { isFetchBaseQueryError, isErrorWithMessage } from "../../app/utils/typeGuards";
+import {
+  isFetchBaseQueryError,
+  isErrorWithMessage,
+} from "../../app/utils/typeGuards";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
@@ -51,7 +58,9 @@ export default function ProductDetails() {
   const isDarkMode = theme.palette.mode === "dark";
 
   // Check if product is in basket and get its quantity
-  const itemInBasket = basket?.items.find(item => item.productId === Number(id));
+  const itemInBasket = basket?.items.find(
+    (item) => item.productId === Number(id)
+  );
   const isInCart = !!itemInBasket;
 
   // Set quantity from basket when product is loaded or basket changes
@@ -82,13 +91,19 @@ export default function ProductDetails() {
 
           if (quantityDifference > 0) {
             // Need to add more
-            await addItem({ productId: product.id, quantity: quantityDifference }).unwrap();
+            await addItem({
+              productId: product.id,
+              quantity: quantityDifference,
+            }).unwrap();
             toast.success(`Cart updated! Quantity increased to ${quantity}`, {
               autoClose: 3000,
             });
           } else {
             // Need to remove some
-            await removeItem({ productId: product.id, quantity: Math.abs(quantityDifference) }).unwrap();
+            await removeItem({
+              productId: product.id,
+              quantity: Math.abs(quantityDifference),
+            }).unwrap();
             toast.success(`Cart updated! Quantity decreased to ${quantity}`, {
               autoClose: 3000,
             });
@@ -102,7 +117,8 @@ export default function ProductDetails() {
         }
       } catch (error) {
         if (isFetchBaseQueryError(error)) {
-          const errorMessage = "data" in error ? String(error.data) : error.status;
+          const errorMessage =
+            "data" in error ? String(error.data) : error.status;
           console.error("Failed to update cart:", errorMessage);
         } else if (isErrorWithMessage(error)) {
           console.error("Failed to update cart:", error.message);
@@ -287,7 +303,9 @@ export default function ProductDetails() {
                     <ListItemIcon>
                       <CheckCircleOutline color="success" />
                     </ListItemIcon>
-                    <ListItemText primary={`${product.quantityInStock} units available`} />
+                    <ListItemText
+                      primary={`${product.quantityInStock} units available`}
+                    />
                   </ListItem>
                   <ListItem>
                     <ListItemIcon>
@@ -354,9 +372,12 @@ export default function ProductDetails() {
                 }}
               >
                 {isAddingToCart
-                  ? (isInCart ? "Updating..." : "Adding...")
-                  : (isInCart ? "Update Quantity" : "Add to Cart")
-                }
+                  ? isInCart
+                    ? "Updating..."
+                    : "Adding..."
+                  : isInCart
+                  ? "Update Quantity"
+                  : "Add to Cart"}
               </Button>
 
               <Button
@@ -401,9 +422,10 @@ export default function ProductDetails() {
                 "No detailed description available for this product."}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              This premium product is designed with quality and durability in mind.
-              Perfect for everyday use and built to withstand the test of time.
-              Each item is carefully crafted to ensure you receive the best value for your investment.
+              This premium product is designed with quality and durability in
+              mind. Perfect for everyday use and built to withstand the test of
+              time. Each item is carefully crafted to ensure you receive the
+              best value for your investment.
             </Typography>
           </Paper>
         </Grid>
@@ -414,7 +436,9 @@ export default function ProductDetails() {
               Product Details
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}
+            >
               <Typography variant="body2" color="text.secondary">
                 SKU:
               </Typography>
@@ -422,7 +446,9 @@ export default function ProductDetails() {
                 {product.id.toString().padStart(6, "0")}
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}
+            >
               <Typography variant="body2" color="text.secondary">
                 Brand:
               </Typography>
@@ -430,7 +456,9 @@ export default function ProductDetails() {
                 {product.brand}
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}
+            >
               <Typography variant="body2" color="text.secondary">
                 Category:
               </Typography>
@@ -438,12 +466,16 @@ export default function ProductDetails() {
                 {product.type}
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}
+            >
               <Typography variant="body2" color="text.secondary">
                 Availability:
               </Typography>
               <Chip
-                label={product.quantityInStock > 0 ? "In Stock" : "Out of Stock"}
+                label={
+                  product.quantityInStock > 0 ? "In Stock" : "Out of Stock"
+                }
                 size="small"
                 color={product.quantityInStock > 0 ? "success" : "error"}
               />
