@@ -48,21 +48,33 @@ namespace API.Controllers
 
 		private async Task<Basket?> RetrieveBasket()
 		{
+			var buyerId = GetBuyerId();
+
 			return await context.Baskets
 				.Include(b => b.Items)
 				.ThenInclude(i => i.Product)
-				.FirstOrDefaultAsync(b => b.BuyerId == Request.Cookies["buyerId"]);
+				.FirstOrDefaultAsync(b => b.BuyerId == buyerId);
+		}
+
+		private string GetBuyerId()
+		{
+			return User.Identity?.Name ?? Request.Cookies["buyerId"] ?? "";
 		}
 
 		private Basket CreateBasket()
 		{
-			var buyerId = Guid.NewGuid().ToString();
-			var cookieOptions = new CookieOptions
+			var buyerId = GetBuyerId();
+
+			if (string.IsNullOrEmpty(buyerId))
 			{
-				IsEssential = true,
-				Expires = DateTimeOffset.UtcNow.AddDays(30)
-			};
-			Response.Cookies.Append("buyerId", buyerId, cookieOptions);
+				buyerId = Guid.NewGuid().ToString();
+				var cookieOptions = new CookieOptions
+				{
+					IsEssential = true,
+					Expires = DateTimeOffset.UtcNow.AddDays(30)
+				};
+				Response.Cookies.Append("buyerId", buyerId, cookieOptions);
+			}
 
 			var basket = new Basket { BuyerId = buyerId };
 			context.Baskets.Add(basket);

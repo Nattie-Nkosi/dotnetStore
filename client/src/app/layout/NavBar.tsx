@@ -14,14 +14,21 @@ import {
   ListItem,
   ListItemText,
   useMediaQuery,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
+  ListItemIcon,
 } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import MenuIcon from "@mui/icons-material/Menu";
-import { NavLink } from "react-router-dom";
+import { LogoutOutlined, PersonOutline, LocationOnOutlined } from "@mui/icons-material";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useFetchBasketQuery } from "../../features/basket/basketApi";
+import { useGetUserInfoQuery, useLogoutMutation } from "../../features/account/accountApi";
 
 const midLinks = [
   { title: "catalog", path: "/catalog" },
@@ -42,14 +49,40 @@ interface Props {
 export default function NavBar({ darkMode, onThemeChange }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const { data: basket } = useFetchBasketQuery();
+  const { data: user } = useGetUserInfoQuery();
+  const [logout] = useLogoutMutation();
 
   const itemCount = basket?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-  // Mobile drawer toggle
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      handleUserMenuClose();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const getInitials = (email: string) => {
+    return email.charAt(0).toUpperCase();
   };
 
   return (
@@ -149,35 +182,139 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
               </Box>
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                {rightLinks.map(({ title, path }) => (
-                  <Button
-                    component={NavLink}
-                    to={path}
-                    key={path}
-                    variant={title === "register" ? "contained" : "text"}
-                    size="small"
-                    sx={(theme) => ({
-                      textTransform: "none",
-                      minWidth: title === "register" ? "auto" : "unset",
-                      ...(title !== "register" && {
-                        color: theme.palette.text.primary,
-                        fontWeight: 500,
-                        textDecoration: "none",
-                        position: "relative",
-                        transition: "all 0.2s ease-in-out",
+                {user ? (
+                  <>
+                    <Box
+                      onClick={handleUserMenuOpen}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        cursor: "pointer",
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: 2,
+                        transition: "all 0.2s",
                         "&:hover": {
-                          color: theme.palette.primary.main,
+                          bgcolor: alpha(theme.palette.primary.main, 0.08),
                         },
-                        "&.active": {
-                          color: theme.palette.primary.main,
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: theme.palette.primary.main,
+                          fontSize: "0.875rem",
                           fontWeight: 600,
+                        }}
+                      >
+                        {getInitials(user.email)}
+                      </Avatar>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 500,
+                          color: theme.palette.text.primary,
+                        }}
+                      >
+                        {user.email.split("@")[0]}
+                      </Typography>
+                    </Box>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleUserMenuClose}
+                      onClick={handleUserMenuClose}
+                      transformOrigin={{ horizontal: "right", vertical: "top" }}
+                      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                      slotProps={{
+                        paper: {
+                          sx: {
+                            mt: 1.5,
+                            minWidth: 200,
+                            borderRadius: 2,
+                            boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.1)}`,
+                          },
                         },
-                      }),
-                    })}
-                  >
-                    {title.charAt(0).toUpperCase() + title.slice(1)}
-                  </Button>
-                ))}
+                      }}
+                    >
+                      <MenuItem
+                        onClick={handleUserMenuClose}
+                        sx={{ py: 1.5, px: 2 }}
+                      >
+                        <ListItemIcon>
+                          <PersonOutline fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Profile"
+                          primaryTypographyProps={{ fontSize: "0.875rem" }}
+                        />
+                      </MenuItem>
+                      <MenuItem
+                        onClick={handleUserMenuClose}
+                        sx={{ py: 1.5, px: 2 }}
+                      >
+                        <ListItemIcon>
+                          <LocationOnOutlined fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="My Address"
+                          primaryTypographyProps={{ fontSize: "0.875rem" }}
+                        />
+                      </MenuItem>
+                      <Divider sx={{ my: 0.5 }} />
+                      <MenuItem
+                        onClick={handleLogout}
+                        sx={{
+                          py: 1.5,
+                          px: 2,
+                          color: theme.palette.error.main,
+                        }}
+                      >
+                        <ListItemIcon>
+                          <LogoutOutlined fontSize="small" color="error" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Logout"
+                          primaryTypographyProps={{ fontSize: "0.875rem" }}
+                        />
+                      </MenuItem>
+                    </Menu>
+                  </>
+                ) : (
+                  <>
+                    {rightLinks.map(({ title, path }) => (
+                      <Button
+                        component={NavLink}
+                        to={path}
+                        key={path}
+                        variant={title === "register" ? "contained" : "text"}
+                        size="small"
+                        sx={(theme) => ({
+                          textTransform: "none",
+                          minWidth: title === "register" ? "auto" : "unset",
+                          ...(title !== "register" && {
+                            color: theme.palette.text.primary,
+                            fontWeight: 500,
+                            textDecoration: "none",
+                            position: "relative",
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              color: theme.palette.primary.main,
+                            },
+                            "&.active": {
+                              color: theme.palette.primary.main,
+                              fontWeight: 600,
+                            },
+                          }),
+                        })}
+                      >
+                        {title.charAt(0).toUpperCase() + title.slice(1)}
+                      </Button>
+                    ))}
+                  </>
+                )}
 
                 <IconButton
                   onClick={onThemeChange}
@@ -237,6 +374,40 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
         }}
       >
         <Box sx={{ p: 2, pt: 4 }}>
+          {user && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                mb: 3,
+                p: 2,
+                borderRadius: 2,
+                bgcolor: alpha(theme.palette.primary.main, 0.08),
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 40,
+                  height: 40,
+                  bgcolor: theme.palette.primary.main,
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                }}
+              >
+                {getInitials(user.email)}
+              </Avatar>
+              <Box>
+                <Typography variant="body2" fontWeight={600}>
+                  {user.email.split("@")[0]}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {user.email}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
           <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
             Menu
           </Typography>
@@ -282,39 +453,116 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                 bgcolor: alpha(theme.palette.divider, 0.1),
               }}
             />
-            {rightLinks.map(({ title, path }) => (
-              <ListItem
-                component={NavLink}
-                to={path}
-                key={path}
-                onClick={toggleMobileMenu}
-                sx={{
-                  borderRadius: 2,
-                  mb: 1,
-                  backgroundColor: "transparent",
-                  "&:hover": {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                  },
-                  "&.active": {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  },
-                }}
-              >
-                <ListItemText
-                  primary={title.charAt(0).toUpperCase() + title.slice(1)}
-                  primaryTypographyProps={{
-                    sx: {
-                      fontWeight: 500,
-                      color: theme.palette.text.primary,
-                      ".active &": {
-                        fontWeight: 600,
-                        color: theme.palette.primary.main,
-                      },
+            {user ? (
+              <>
+                <ListItem
+                  onClick={toggleMobileMenu}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    backgroundColor: "transparent",
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.05),
                     },
                   }}
-                />
-              </ListItem>
-            ))}
+                >
+                  <ListItemIcon>
+                    <PersonOutline fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Profile"
+                    primaryTypographyProps={{
+                      fontWeight: 500,
+                      color: theme.palette.text.primary,
+                    }}
+                  />
+                </ListItem>
+                <ListItem
+                  onClick={toggleMobileMenu}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    backgroundColor: "transparent",
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                    },
+                  }}
+                >
+                  <ListItemIcon>
+                    <LocationOnOutlined fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="My Address"
+                    primaryTypographyProps={{
+                      fontWeight: 500,
+                      color: theme.palette.text.primary,
+                    }}
+                  />
+                </ListItem>
+                <ListItem
+                  onClick={() => {
+                    toggleMobileMenu();
+                    handleLogout();
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    backgroundColor: "transparent",
+                    color: theme.palette.error.main,
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.error.main, 0.05),
+                    },
+                  }}
+                >
+                  <ListItemIcon>
+                    <LogoutOutlined fontSize="small" color="error" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Logout"
+                    primaryTypographyProps={{
+                      fontWeight: 500,
+                      color: theme.palette.error.main,
+                    }}
+                  />
+                </ListItem>
+              </>
+            ) : (
+              <>
+                {rightLinks.map(({ title, path }) => (
+                  <ListItem
+                    component={NavLink}
+                    to={path}
+                    key={path}
+                    onClick={toggleMobileMenu}
+                    sx={{
+                      borderRadius: 2,
+                      mb: 1,
+                      backgroundColor: "transparent",
+                      "&:hover": {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                      },
+                      "&.active": {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      },
+                    }}
+                  >
+                    <ListItemText
+                      primary={title.charAt(0).toUpperCase() + title.slice(1)}
+                      primaryTypographyProps={{
+                        sx: {
+                          fontWeight: 500,
+                          color: theme.palette.text.primary,
+                          ".active &": {
+                            fontWeight: 600,
+                            color: theme.palette.primary.main,
+                          },
+                        },
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </>
+            )}
           </List>
 
           <Box

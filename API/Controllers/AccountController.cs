@@ -35,6 +35,60 @@ namespace API.Controllers
 			return StatusCode(201);
 		}
 
+		[HttpPost("login")]
+		public async Task<ActionResult> Login(LoginDto loginDto)
+		{
+			var user = await userManager.FindByEmailAsync(loginDto.Email);
+
+			if (user == null) return Unauthorized();
+
+			var result = await signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
+
+			if (!result.Succeeded) return Unauthorized();
+
+			await TransferAnonymousBasket(user.UserName!);
+
+			return Ok(new
+			{
+				user.Email,
+				user.UserName,
+				Roles = await userManager.GetRolesAsync(user)
+			});
+		}
+
+		private async Task TransferAnonymousBasket(string userName)
+		{
+			var anonymousBuyerId = Request.Cookies["buyerId"];
+			if (string.IsNullOrEmpty(anonymousBuyerId)) return;
+
+			var anonymousBasket = await context.Baskets
+				.Include(b => b.Items)
+				.FirstOrDefaultAsync(b => b.BuyerId == anonymousBuyerId);
+
+			if (anonymousBasket == null) return;
+
+			var userBasket = await context.Baskets
+				.Include(b => b.Items)
+				.ThenInclude(i => i.Product)
+				.FirstOrDefaultAsync(b => b.BuyerId == userName);
+
+			if (userBasket != null)
+			{
+				foreach (var item in anonymousBasket.Items)
+				{
+					userBasket.AddItem(item.Product, item.Quantity);
+				}
+				context.Baskets.Remove(anonymousBasket);
+			}
+			else
+			{
+				anonymousBasket.BuyerId = userName;
+			}
+
+			Response.Cookies.Delete("buyerId");
+			await context.SaveChangesAsync();
+		}
+
 		[HttpGet("user-info")]
 		public async Task<ActionResult> GetUserInfo()
 		{

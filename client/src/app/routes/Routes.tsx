@@ -9,6 +9,10 @@ import BasketPage from "../../features/basket/BasketPage";
 import CheckoutPage from "../../features/checkout/CheckoutPage";
 import NotFound from "../errors/NotFound";
 import ServerError from "../errors/ServerError";
+import LoginPage from "../../features/account/LoginPage";
+import RegisterPage from "../../features/account/RegisterPage";
+import PrivateRoute from "./PrivateRoute";
+import PublicRoute from "./PublicRoute";
 
 export const router = createBrowserRouter([
   {
@@ -20,7 +24,30 @@ export const router = createBrowserRouter([
       { path: "/catalog", element: <Catalog /> },
       { path: "/catalog/:id", element: <ProductDetails /> },
       { path: "/basket", element: <BasketPage /> },
-      { path: "/checkout", element: <CheckoutPage /> },
+      {
+        path: "/checkout",
+        element: (
+          <PrivateRoute>
+            <CheckoutPage />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/login",
+        element: (
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        ),
+      },
+      {
+        path: "/register",
+        element: (
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        ),
+      },
       { path: "/about", element: <AboutPage /> },
       { path: "/contact", element: <ContactPage /> },
       { path: "/server-error", element: <ServerError /> },
