@@ -114,7 +114,16 @@ export default function BasketPage() {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
         <Typography variant="h4" fontWeight={600}>
           Shopping Cart
           <Chip
@@ -129,6 +138,7 @@ export default function BasketPage() {
           to="/catalog"
           startIcon={<ArrowBack />}
           variant="outlined"
+          fullWidth={{ xs: true, sm: false }}
         >
           Continue Shopping
         </Button>
@@ -155,22 +165,40 @@ export default function BasketPage() {
                         src={item.pictureUrl}
                         alt={item.name}
                         sx={{
-                          width: 80,
-                          height: 80,
+                          width: { xs: 60, sm: 80 },
+                          height: { xs: 60, sm: 80 },
                           objectFit: "contain",
                           borderRadius: 1,
                           bgcolor: "background.default",
                           p: 1,
+                          flexShrink: 0,
                         }}
                       />
-                      <Box>
-                        <Typography variant="h6" fontWeight={500}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="h6"
+                          fontWeight={500}
+                          sx={{
+                            fontSize: { xs: "1rem", sm: "1.25rem" },
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: { xs: "normal", sm: "nowrap" },
+                          }}
+                        >
                           {item.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {item.brand} • {item.type}
                         </Typography>
-                        <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
+                        <Typography
+                          variant="h6"
+                          color="primary"
+                          sx={{
+                            mt: 1,
+                            fontSize: { xs: "1rem", sm: "1.25rem" },
+                            display: { xs: "block", sm: "none" },
+                          }}
+                        >
                           R{(item.price / 100).toFixed(2)}
                         </Typography>
                       </Box>
@@ -178,47 +206,83 @@ export default function BasketPage() {
                   </Grid>
 
                   {/* Quantity Controls */}
-                  <Grid item xs={6} sm={3}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <IconButton
-                        onClick={() => handleRemoveItem(item.productId, 1)}
-                        size="small"
-                        color="error"
-                        sx={{
-                          border: 1,
-                          borderColor: "error.main",
-                        }}
+                  <Grid item xs={7} sm={3}>
+                    <Box>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: { xs: "block", sm: "none" }, mb: 0.5 }}
                       >
-                        <Remove fontSize="small" />
-                      </IconButton>
-                      <Typography variant="h6" sx={{ minWidth: 30, textAlign: "center" }}>
-                        {item.quantity}
+                        Quantity
                       </Typography>
-                      <IconButton
-                        onClick={() => handleAddItem(item.productId)}
-                        size="small"
-                        color="primary"
-                        sx={{
-                          border: 1,
-                          borderColor: "primary.main",
-                        }}
-                      >
-                        <Add fontSize="small" />
-                      </IconButton>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <IconButton
+                          onClick={() => handleRemoveItem(item.productId, 1)}
+                          size="small"
+                          color="error"
+                          sx={{
+                            border: 1,
+                            borderColor: "error.main",
+                          }}
+                        >
+                          <Remove fontSize="small" />
+                        </IconButton>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            minWidth: 30,
+                            textAlign: "center",
+                            fontSize: { xs: "1rem", sm: "1.25rem" },
+                          }}
+                        >
+                          {item.quantity}
+                        </Typography>
+                        <IconButton
+                          onClick={() => handleAddItem(item.productId)}
+                          size="small"
+                          color="primary"
+                          sx={{
+                            border: 1,
+                            borderColor: "primary.main",
+                          }}
+                        >
+                          <Add fontSize="small" />
+                        </IconButton>
+                      </Box>
                     </Box>
                   </Grid>
 
                   {/* Item Total & Delete */}
-                  <Grid item xs={6} sm={3}>
-                    <Box display="flex" alignItems="center" justifyContent="space-between">
-                      <Typography variant="h6" fontWeight={600}>
-                        R{((item.price * item.quantity) / 100).toFixed(2)}
-                      </Typography>
+                  <Grid item xs={5} sm={3}>
+                    <Box
+                      display="flex"
+                      flexDirection={{ xs: "column", sm: "row" }}
+                      alignItems={{ xs: "flex-end", sm: "center" }}
+                      justifyContent={{ xs: "flex-start", sm: "space-between" }}
+                      gap={{ xs: 1, sm: 0 }}
+                    >
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: { xs: "block", sm: "none" } }}
+                        >
+                          Total
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          fontWeight={600}
+                          sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
+                        >
+                          R{((item.price * item.quantity) / 100).toFixed(2)}
+                        </Typography>
+                      </Box>
                       <IconButton
                         onClick={() => handleRemoveItem(item.productId, item.quantity)}
                         color="error"
+                        size="small"
                       >
-                        <Delete />
+                        <Delete fontSize="small" />
                       </IconButton>
                     </Box>
                   </Grid>
@@ -230,7 +294,14 @@ export default function BasketPage() {
 
         {/* Order Summary */}
         <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 3, position: "sticky", top: 100 }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 3,
+              position: { xs: "static", md: "sticky" },
+              top: 100,
+            }}
+          >
             <Typography variant="h5" fontWeight={600} gutterBottom>
               Order Summary
             </Typography>

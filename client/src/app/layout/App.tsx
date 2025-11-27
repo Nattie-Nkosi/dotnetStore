@@ -88,11 +88,17 @@ function App() {
           sx={{
             flex: 1,
             background: theme.palette.background.default,
-            pt: 8,
-            pb: 6,
+            pt: { xs: 2, sm: 4, md: 8 },
+            pb: { xs: 4, sm: 5, md: 6 },
           }}
         >
-          <Container maxWidth="lg" sx={{ mt: 8 }}>
+          <Container
+            maxWidth="lg"
+            sx={{
+              mt: { xs: 7, sm: 8 },
+              px: { xs: 2, sm: 3 },
+            }}
+          >
             <Outlet />
           </Container>
         </Box>

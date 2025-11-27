@@ -202,12 +202,12 @@ export default function ProductDetails() {
               backgroundColor: isDarkMode
                 ? alpha(theme.palette.background.paper, 0.6)
                 : "#f5f5f5",
-              p: 4,
+              p: { xs: 2, sm: 3, md: 4 },
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               height: "100%",
-              minHeight: 500,
+              minHeight: { xs: 300, sm: 400, md: 500 },
               position: "relative",
             }}
           >
@@ -263,19 +263,29 @@ export default function ProductDetails() {
               <Chip label={product.type} size="small" variant="outlined" />
             </Stack>
 
-            <Typography variant="h3" fontWeight={700} gutterBottom>
+            <Typography
+              variant="h3"
+              fontWeight={700}
+              gutterBottom
+              sx={{ fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" } }}
+            >
               {product.name}
             </Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-              <Rating value={4.5} precision={0.5} readOnly />
+              <Rating value={4.5} precision={0.5} size="small" readOnly />
               <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
                 4.5 (24 reviews)
               </Typography>
             </Box>
 
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h3" color="primary" fontWeight={700}>
+              <Typography
+                variant="h3"
+                color="primary"
+                fontWeight={700}
+                sx={{ fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" } }}
+              >
                 R{(product.price / 100).toFixed(2)}
               </Typography>
               {product.price >= 50000 && (
@@ -333,7 +343,14 @@ export default function ProductDetails() {
               <Typography variant="subtitle2" gutterBottom fontWeight={600}>
                 Quantity
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: { xs: "flex-start", sm: "center" },
+                  gap: 2,
+                }}
+              >
                 <TextField
                   type="number"
                   value={quantity}
@@ -342,7 +359,7 @@ export default function ProductDetails() {
                     inputProps: { min: 1, max: product.quantityInStock },
                   }}
                   size="medium"
-                  sx={{ width: 120 }}
+                  sx={{ width: { xs: "100%", sm: 120 } }}
                 />
                 <Typography variant="caption" color="text.secondary">
                   {product.quantityInStock} available
@@ -350,7 +367,11 @@ export default function ProductDetails() {
               </Box>
             </Box>
 
-            <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              sx={{ mb: 3 }}
+            >
               <Button
                 variant="contained"
                 size="large"
@@ -366,7 +387,7 @@ export default function ProductDetails() {
                 sx={{
                   flex: 1,
                   py: 1.5,
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
                   fontWeight: 600,
                   textTransform: "none",
                 }}
@@ -389,6 +410,7 @@ export default function ProductDetails() {
                   py: 1.5,
                   fontWeight: 600,
                   textTransform: "none",
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
                 }}
               >
                 Wishlist

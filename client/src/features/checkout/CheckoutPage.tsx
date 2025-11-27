@@ -140,21 +140,43 @@ export default function CheckoutPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mb: 8 }}>
-      <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 2,
+        }}
+      >
         <Button
           component={Link}
           to="/basket"
           startIcon={<ArrowBack />}
           variant="outlined"
+          fullWidth={{ xs: true, sm: false }}
         >
           Back to Cart
         </Button>
-        <Typography variant="h4" fontWeight={600}>
+        <Typography
+          variant="h4"
+          fontWeight={600}
+          sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}
+        >
           Checkout
         </Typography>
       </Box>
 
-      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+      <Stepper
+        activeStep={activeStep}
+        sx={{
+          mb: 4,
+          flexWrap: { xs: "wrap", sm: "nowrap" },
+          "& .MuiStepLabel-label": {
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          },
+        }}
+      >
         {steps.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
@@ -485,7 +507,14 @@ export default function CheckoutPage() {
 
         {/* Order Summary Sidebar */}
         <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 3, position: "sticky", top: 100 }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 3,
+              position: { xs: "static", md: "sticky" },
+              top: 100,
+            }}
+          >
             <Typography variant="h5" fontWeight={600} gutterBottom>
               Order Summary
             </Typography>

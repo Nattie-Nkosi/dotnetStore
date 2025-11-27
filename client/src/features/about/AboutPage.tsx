@@ -200,11 +200,19 @@ export default function AboutPage() {
 
   return (
     <Container>
-      <Box mt={4}>
-        <Typography variant="h4" gutterBottom>
+      <Box mt={{ xs: 2, sm: 4 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}
+        >
           Error Handling Demo
         </Typography>
-        <Typography variant="body1" paragraph>
+        <Typography
+          variant="body1"
+          paragraph
+          sx={{ fontSize: { xs: "0.9375rem", sm: "1rem" } }}
+        >
           Click the buttons below to test different error scenarios. The API
           will return various HTTP status codes and error responses.
         </Typography>

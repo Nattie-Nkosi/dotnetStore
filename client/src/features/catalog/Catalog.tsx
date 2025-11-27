@@ -5,7 +5,15 @@ import {
   Paper,
   Typography,
   CircularProgress,
+  Drawer,
+  Button,
+  useMediaQuery,
+  useTheme,
+  IconButton,
+  Badge,
 } from "@mui/material";
+import { FilterList, Close } from "@mui/icons-material";
+import { useState } from "react";
 import ProductList from "./ProductList";
 import Filters from "./Filters";
 import Search from "./Search";
@@ -18,6 +26,9 @@ import { setProductParams } from "./catalogSlice";
 export default function Catalog() {
   const dispatch = useAppDispatch();
   const productParams = useAppSelector((state) => state.catalog.productParams);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const {
     data: products = [],
@@ -68,23 +79,101 @@ export default function Catalog() {
 
   const selectedBrands = productParams.brands?.split(",").filter(Boolean) || [];
   const selectedTypes = productParams.types?.split(",").filter(Boolean) || [];
+  const activeFiltersCount = selectedBrands.length + selectedTypes.length;
+
+  const filtersContent = (
+    <Filters
+      filters={filters}
+      selectedBrands={selectedBrands}
+      selectedTypes={selectedTypes}
+      onBrandChange={handleBrandChange}
+      onTypeChange={handleTypeChange}
+    />
+  );
 
   return (
     <Box>
       <Search />
 
-      <Grid container spacing={4}>
-        <Grid item xs={3}>
-          <Filters
-            filters={filters}
-            selectedBrands={selectedBrands}
-            selectedTypes={selectedTypes}
-            onBrandChange={handleBrandChange}
-            onTypeChange={handleTypeChange}
-          />
-        </Grid>
+      {/* Mobile Filters Button */}
+      {isMobile && (
+        <Box sx={{ mb: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<FilterList />}
+            onClick={() => setFiltersOpen(true)}
+            fullWidth
+            sx={{ justifyContent: "flex-start", py: 1.5 }}
+          >
+            Filters
+            {activeFiltersCount > 0 && (
+              <Badge
+                badgeContent={activeFiltersCount}
+                color="primary"
+                sx={{ ml: 1 }}
+              />
+            )}
+          </Button>
+        </Box>
+      )}
 
-        <Grid item xs={9}>
+      {/* Mobile Filters Drawer */}
+      <Drawer
+        anchor="left"
+        open={filtersOpen && isMobile}
+        onClose={() => setFiltersOpen(false)}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: "85%",
+            maxWidth: 360,
+            boxSizing: "border-box",
+          },
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" fontWeight={600}>
+              Filters
+              {activeFiltersCount > 0 && (
+                <Badge
+                  badgeContent={activeFiltersCount}
+                  color="primary"
+                  sx={{ ml: 2 }}
+                />
+              )}
+            </Typography>
+            <IconButton onClick={() => setFiltersOpen(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+          {filtersContent}
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => setFiltersOpen(false)}
+            sx={{ mt: 2 }}
+          >
+            Apply Filters
+          </Button>
+        </Box>
+      </Drawer>
+
+      <Grid container spacing={4}>
+        {/* Desktop Filters */}
+        {!isMobile && (
+          <Grid item xs={12} md={3}>
+            {filtersContent}
+          </Grid>
+        )}
+
+        <Grid item xs={12} md={isMobile ? 12 : 9}>
           <Paper sx={{ mb: 2, p: 2 }}>
             <Sorting />
           </Paper>

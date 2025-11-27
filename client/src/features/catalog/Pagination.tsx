@@ -1,4 +1,4 @@
-import { Pagination as MuiPagination, Typography, Paper } from "@mui/material";
+import { Pagination as MuiPagination, Typography, Paper, useMediaQuery, useTheme } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../app/store/store";
 import { setPageNumber } from "./catalogSlice";
 
@@ -8,6 +8,9 @@ interface PaginationProps {
 
 export default function Pagination({ isLoading = false }: PaginationProps) {
   const dispatch = useAppDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
   const { metaData, productParams } = useAppSelector((state) => state.catalog);
 
   if (!metaData || metaData.totalPages <= 1) {
@@ -29,7 +32,7 @@ export default function Pagination({ isLoading = false }: PaginationProps) {
     <Paper
       elevation={2}
       sx={{
-        p: 2,
+        p: { xs: 1.5, sm: 2 },
         mt: 3,
         display: "flex",
         flexDirection: { xs: "column", sm: "row" },
@@ -38,7 +41,11 @@ export default function Pagination({ isLoading = false }: PaginationProps) {
         gap: 2,
       }}
     >
-      <Typography variant="body2" color="text.secondary">
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+      >
         Showing <strong>{startItem}-{endItem}</strong> of <strong>{totalCount}</strong> items
       </Typography>
       <MuiPagination
@@ -46,10 +53,11 @@ export default function Pagination({ isLoading = false }: PaginationProps) {
         page={productParams.pageNumber || 1}
         onChange={handlePageChange}
         color="primary"
-        size="large"
+        size={isMobile ? "small" : isTablet ? "medium" : "large"}
         disabled={isLoading}
-        showFirstButton
-        showLastButton
+        showFirstButton={!isMobile}
+        showLastButton={!isMobile}
+        siblingCount={isMobile ? 0 : 1}
         sx={{
           "& .MuiPaginationItem-root": {
             opacity: isLoading ? 0.5 : 1,
