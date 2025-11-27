@@ -63,6 +63,7 @@ namespace API.Controllers
 
 			var anonymousBasket = await context.Baskets
 				.Include(b => b.Items)
+				.ThenInclude(i => i.Product)
 				.FirstOrDefaultAsync(b => b.BuyerId == anonymousBuyerId);
 
 			if (anonymousBasket == null) return;

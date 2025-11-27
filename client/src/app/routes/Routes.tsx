@@ -7,6 +7,7 @@ import AboutPage from "../../features/about/AboutPage";
 import ContactPage from "../../features/contact/ContactPage";
 import BasketPage from "../../features/basket/BasketPage";
 import CheckoutPage from "../../features/checkout/CheckoutPage";
+import OrderSuccess from "../../features/checkout/OrderSuccess";
 import NotFound from "../errors/NotFound";
 import ServerError from "../errors/ServerError";
 import LoginPage from "../../features/account/LoginPage";
@@ -29,6 +30,14 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <CheckoutPage />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/order-success",
+        element: (
+          <PrivateRoute>
+            <OrderSuccess />
           </PrivateRoute>
         ),
       },

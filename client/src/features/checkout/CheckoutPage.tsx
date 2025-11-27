@@ -13,31 +13,35 @@ import {
   Stepper,
   Step,
   StepLabel,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
   Chip,
+  CircularProgress,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFetchBasketQuery } from "../basket/basketApi";
-import { useNavigate, Link } from "react-router-dom";
+import { useCreatePaymentIntentMutation } from "../payment/paymentApi";
+import { Link } from "react-router-dom";
 import {
   ShoppingCartOutlined,
   LocalShippingOutlined,
-  PaymentOutlined,
   CheckCircleOutline,
   ArrowBack,
   LockOutlined,
 } from "@mui/icons-material";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
+import StripePaymentForm from "../payment/StripePaymentForm";
 
-const steps = ["Shipping Address", "Payment Method", "Review Order"];
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+const steps = ["Shipping Address", "Payment", "Review Order"];
 
 export default function CheckoutPage() {
   const { data: basket, isLoading } = useFetchBasketQuery();
-  const navigate = useNavigate();
+  const [createPaymentIntent, { isLoading: isCreatingIntent }] =
+    useCreatePaymentIntentMutation();
+  //const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
+  const [clientSecret, setClientSecret] = useState<string>();
 
   // Form state
   const [shippingAddress, setShippingAddress] = useState({
@@ -50,7 +54,22 @@ export default function CheckoutPage() {
     phoneNumber: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  useEffect(() => {
+    if (basket && !basket.clientSecret && activeStep === 1) {
+      createPaymentIntent()
+        .unwrap()
+        .then((response) => {
+          if (response.clientSecret) {
+            setClientSecret(response.clientSecret);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to create payment intent:", error);
+        });
+    } else if (basket?.clientSecret) {
+      setClientSecret(basket.clientSecret);
+    }
+  }, [basket, activeStep, createPaymentIntent]);
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -58,13 +77,6 @@ export default function CheckoutPage() {
 
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
-  };
-
-  const handlePlaceOrder = () => {
-    // TODO: Implement order placement logic
-    console.log("Order placed:", { shippingAddress, paymentMethod, basket });
-    alert("Order placed successfully! (This is a demo)");
-    navigate("/");
   };
 
   if (isLoading) {
@@ -90,7 +102,9 @@ export default function CheckoutPage() {
             textAlign: "center",
           }}
         >
-          <ShoppingCartOutlined sx={{ fontSize: 100, color: "text.secondary", mb: 2 }} />
+          <ShoppingCartOutlined
+            sx={{ fontSize: 100, color: "text.secondary", mb: 2 }}
+          />
           <Typography variant="h4" gutterBottom>
             Your basket is empty
           </Typography>
@@ -132,10 +146,17 @@ export default function CheckoutPage() {
           shippingAddress.phoneNumber
         );
       case 1:
-        return paymentMethod !== "";
+        return !!clientSecret;
       default:
         return true;
     }
+  };
+
+  const stripeOptions: StripeElementsOptions = {
+    clientSecret: clientSecret,
+    appearance: {
+      theme: "stripe",
+    },
   };
 
   return (
@@ -154,7 +175,7 @@ export default function CheckoutPage() {
           to="/basket"
           startIcon={<ArrowBack />}
           variant="outlined"
-          fullWidth={{ xs: true, sm: false }}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           Back to Cart
         </Button>
@@ -189,7 +210,9 @@ export default function CheckoutPage() {
         <Grid item xs={12} md={8}>
           {activeStep === 0 && (
             <Paper sx={{ p: 3 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}
+              >
                 <LocalShippingOutlined color="primary" />
                 <Typography variant="h5" fontWeight={600}>
                   Shipping Address
@@ -204,7 +227,10 @@ export default function CheckoutPage() {
                     required
                     value={shippingAddress.fullName}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, fullName: e.target.value })
+                      setShippingAddress({
+                        ...shippingAddress,
+                        fullName: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -215,7 +241,10 @@ export default function CheckoutPage() {
                     required
                     value={shippingAddress.addressLine1}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, addressLine1: e.target.value })
+                      setShippingAddress({
+                        ...shippingAddress,
+                        addressLine1: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -225,7 +254,10 @@ export default function CheckoutPage() {
                     label="Address Line 2"
                     value={shippingAddress.addressLine2}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, addressLine2: e.target.value })
+                      setShippingAddress({
+                        ...shippingAddress,
+                        addressLine2: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -236,7 +268,10 @@ export default function CheckoutPage() {
                     required
                     value={shippingAddress.city}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, city: e.target.value })
+                      setShippingAddress({
+                        ...shippingAddress,
+                        city: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -247,7 +282,10 @@ export default function CheckoutPage() {
                     required
                     value={shippingAddress.province}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, province: e.target.value })
+                      setShippingAddress({
+                        ...shippingAddress,
+                        province: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -258,7 +296,10 @@ export default function CheckoutPage() {
                     required
                     value={shippingAddress.postalCode}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, postalCode: e.target.value })
+                      setShippingAddress({
+                        ...shippingAddress,
+                        postalCode: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -269,7 +310,10 @@ export default function CheckoutPage() {
                     required
                     value={shippingAddress.phoneNumber}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, phoneNumber: e.target.value })
+                      setShippingAddress({
+                        ...shippingAddress,
+                        phoneNumber: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -289,110 +333,43 @@ export default function CheckoutPage() {
           )}
 
           {activeStep === 1 && (
-            <Paper sx={{ p: 3 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-                <PaymentOutlined color="primary" />
-                <Typography variant="h5" fontWeight={600}>
-                  Payment Method
-                </Typography>
-              </Box>
+            <Box>
+              {isCreatingIntent && (
+                <Paper sx={{ p: 3, textAlign: "center" }}>
+                  <CircularProgress sx={{ mb: 2 }} />
+                  <Typography variant="body1" color="text.secondary">
+                    Setting up secure payment...
+                  </Typography>
+                </Paper>
+              )}
 
-              <FormControl component="fieldset">
-                <FormLabel component="legend">Select Payment Method</FormLabel>
-                <RadioGroup
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  sx={{ mt: 2 }}
-                >
-                  <Paper sx={{ p: 2, mb: 2 }}>
-                    <FormControlLabel
-                      value="card"
-                      control={<Radio />}
-                      label={
-                        <Box>
-                          <Typography variant="body1" fontWeight={600}>
-                            Credit / Debit Card
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Pay securely with your card
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </Paper>
+              {!isCreatingIntent && clientSecret && (
+                <Elements stripe={stripePromise} options={stripeOptions}>
+                  <StripePaymentForm />
+                </Elements>
+              )}
 
-                  <Paper sx={{ p: 2, mb: 2 }}>
-                    <FormControlLabel
-                      value="paypal"
-                      control={<Radio />}
-                      label={
-                        <Box>
-                          <Typography variant="body1" fontWeight={600}>
-                            PayPal
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Fast and secure payment with PayPal
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </Paper>
+              {!isCreatingIntent && !clientSecret && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  Failed to initialize payment. Please try again.
+                </Alert>
+              )}
 
-                  <Paper sx={{ p: 2, mb: 2 }}>
-                    <FormControlLabel
-                      value="eft"
-                      control={<Radio />}
-                      label={
-                        <Box>
-                          <Typography variant="body1" fontWeight={600}>
-                            EFT / Bank Transfer
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Direct bank transfer
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </Paper>
-
-                  <Paper sx={{ p: 2 }}>
-                    <FormControlLabel
-                      value="cod"
-                      control={<Radio />}
-                      label={
-                        <Box>
-                          <Typography variant="body1" fontWeight={600}>
-                            Cash on Delivery
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Pay when you receive your order
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </Paper>
-                </RadioGroup>
-              </FormControl>
-
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-                <Button onClick={handleBack} size="large">
-                  Back
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleNext}
-                  disabled={!isStepValid(1)}
-                  size="large"
-                >
-                  Review Order
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-start", mt: 3 }}
+              >
+                <Button onClick={handleBack} size="large" variant="outlined">
+                  Back to Shipping
                 </Button>
               </Box>
-            </Paper>
+            </Box>
           )}
 
           {activeStep === 2 && (
             <Paper sx={{ p: 3 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}
+              >
                 <CheckCircleOutline color="primary" />
                 <Typography variant="h5" fontWeight={600}>
                   Review Your Order
@@ -436,10 +413,7 @@ export default function CheckoutPage() {
                 <Card sx={{ bgcolor: "action.hover" }}>
                   <CardContent>
                     <Typography variant="body1">
-                      {paymentMethod === "card" && "Credit / Debit Card"}
-                      {paymentMethod === "paypal" && "PayPal"}
-                      {paymentMethod === "eft" && "EFT / Bank Transfer"}
-                      {paymentMethod === "cod" && "Cash on Delivery"}
+                      Secure payment via Stripe
                     </Typography>
                   </CardContent>
                 </Card>
@@ -451,7 +425,10 @@ export default function CheckoutPage() {
                   Order Items ({itemCount})
                 </Typography>
                 {basket.items.map((item) => (
-                  <Card key={item.productId} sx={{ mb: 2, bgcolor: "action.hover" }}>
+                  <Card
+                    key={item.productId}
+                    sx={{ mb: 2, bgcolor: "action.hover" }}
+                  >
                     <CardContent>
                       <Box display="flex" alignItems="center" gap={2}>
                         <Box
@@ -485,20 +462,18 @@ export default function CheckoutPage() {
               </Box>
 
               <Alert severity="info" icon={<LockOutlined />} sx={{ mb: 3 }}>
-                Your payment information is secure and encrypted
+                Ready to complete your order? Click "Back to Payment" to proceed
+                with secure checkout.
               </Alert>
 
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Button onClick={handleBack} size="large">
-                  Back
-                </Button>
+              <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
                 <Button
-                  variant="contained"
-                  onClick={handlePlaceOrder}
+                  onClick={handleBack}
                   size="large"
+                  variant="contained"
                   sx={{ px: 4 }}
                 >
-                  Place Order
+                  Back to Payment
                 </Button>
               </Box>
             </Paper>
@@ -521,7 +496,9 @@ export default function CheckoutPage() {
             <Divider sx={{ my: 2 }} />
 
             <Box display="flex" justifyContent="space-between" sx={{ mb: 1.5 }}>
-              <Typography variant="body1">Subtotal ({itemCount} items)</Typography>
+              <Typography variant="body1">
+                Subtotal ({itemCount} items)
+              </Typography>
               <Typography variant="body1" fontWeight={500}>
                 R{(subtotal / 100).toFixed(2)}
               </Typography>
@@ -534,7 +511,9 @@ export default function CheckoutPage() {
                 fontWeight={500}
                 color={deliveryFee === 0 ? "success.main" : "text.primary"}
               >
-                {deliveryFee === 0 ? "FREE" : `R${(deliveryFee / 100).toFixed(2)}`}
+                {deliveryFee === 0
+                  ? "FREE"
+                  : `R${(deliveryFee / 100).toFixed(2)}`}
               </Typography>
             </Box>
 
@@ -567,7 +546,9 @@ export default function CheckoutPage() {
 
             <Box sx={{ p: 2, bgcolor: "action.hover", borderRadius: 1 }}>
               <Typography variant="caption" color="text.secondary">
-                <LockOutlined sx={{ fontSize: 14, mr: 0.5, verticalAlign: "middle" }} />
+                <LockOutlined
+                  sx={{ fontSize: 14, mr: 0.5, verticalAlign: "middle" }}
+                />
                 Secure checkout with SSL encryption
               </Typography>
             </Box>

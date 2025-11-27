@@ -46,6 +46,19 @@ namespace API.Controllers
 			return BadRequest(new ProblemDetails { Title = "Problem removing item from basket" });
 		}
 
+		[HttpDelete("clear")]
+		public async Task<ActionResult> ClearBasket()
+		{
+			var basket = await RetrieveBasket();
+			if (basket == null) return NoContent();
+
+			context.Baskets.Remove(basket);
+			var result = await context.SaveChangesAsync() > 0;
+
+			if (result) return NoContent();
+			return BadRequest(new ProblemDetails { Title = "Problem clearing basket" });
+		}
+
 		private async Task<Basket?> RetrieveBasket()
 		{
 			var buyerId = GetBuyerId();

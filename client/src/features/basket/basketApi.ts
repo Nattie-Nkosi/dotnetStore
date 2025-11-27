@@ -38,6 +38,13 @@ export const basketApi = createApi({
       }),
       invalidatesTags: ["Basket"],
     }),
+    clearBasket: builder.mutation<void, void>({
+      query: () => ({
+        url: "basket/clear",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Basket"],
+    }),
   }),
 });
 
@@ -45,4 +52,5 @@ export const {
   useFetchBasketQuery,
   useAddBasketItemMutation,
   useRemoveBasketItemMutation,
+  useClearBasketMutation,
 } = basketApi;
