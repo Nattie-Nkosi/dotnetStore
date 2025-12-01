@@ -6,6 +6,7 @@ import {
   ThemeProvider,
 } from "@mui/material";
 import NavBar from "./NavBar";
+import Footer from "./Footer";
 import { Outlet } from "react-router-dom";
 import LoadingIndicator from "./LoadingIndicator";
 import { useAppDispatch, useAppSelector } from "../store/store";
@@ -102,6 +103,7 @@ function App() {
             <Outlet />
           </Container>
         </Box>
+        <Footer />
       </Box>
     </ThemeProvider>
   );
