@@ -8,6 +8,7 @@ import { buggyApi } from "../api/buggyApi";
 import { uiSlice } from "./uiSlice";
 import { accountApi } from "../../features/account/accountApi";
 import { paymentApi } from "../../features/payment/paymentApi";
+import { ordersApi } from "../../features/orders/ordersApi";
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     [buggyApi.reducerPath]: buggyApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
+    [ordersApi.reducerPath]: ordersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -26,7 +28,8 @@ export const store = configureStore({
       basketApi.middleware,
       buggyApi.middleware,
       accountApi.middleware,
-      paymentApi.middleware
+      paymentApi.middleware,
+      ordersApi.middleware
     ),
 });
 

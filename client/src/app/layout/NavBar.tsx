@@ -24,7 +24,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import MenuIcon from "@mui/icons-material/Menu";
-import { LogoutOutlined, PersonOutline, LocationOnOutlined } from "@mui/icons-material";
+import { LogoutOutlined, PersonOutline, LocationOnOutlined, ReceiptLongOutlined } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useFetchBasketQuery } from "../../features/basket/basketApi";
@@ -252,6 +252,21 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                         />
                       </MenuItem>
                       <MenuItem
+                        onClick={() => {
+                          handleUserMenuClose();
+                          navigate("/orders");
+                        }}
+                        sx={{ py: 1.5, px: 2 }}
+                      >
+                        <ListItemIcon>
+                          <ReceiptLongOutlined fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="My Orders"
+                          primaryTypographyProps={{ fontSize: "0.875rem" }}
+                        />
+                      </MenuItem>
+                      <MenuItem
                         onClick={handleUserMenuClose}
                         sx={{ py: 1.5, px: 2 }}
                       >
@@ -471,6 +486,31 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                   </ListItemIcon>
                   <ListItemText
                     primary="Profile"
+                    primaryTypographyProps={{
+                      fontWeight: 500,
+                      color: theme.palette.text.primary,
+                    }}
+                  />
+                </ListItem>
+                <ListItem
+                  onClick={() => {
+                    toggleMobileMenu();
+                    navigate("/orders");
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    backgroundColor: "transparent",
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                    },
+                  }}
+                >
+                  <ListItemIcon>
+                    <ReceiptLongOutlined fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="My Orders"
                     primaryTypographyProps={{
                       fontWeight: 500,
                       color: theme.palette.text.primary,

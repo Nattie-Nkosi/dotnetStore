@@ -15,6 +15,8 @@ import {
   StepLabel,
   Chip,
   CircularProgress,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useFetchBasketQuery } from "../basket/basketApi";
@@ -28,7 +30,7 @@ import {
   LockOutlined,
 } from "@mui/icons-material";
 import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import StripePaymentForm from "../payment/StripePaymentForm";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -53,21 +55,27 @@ export default function CheckoutPage() {
     postalCode: "",
     phoneNumber: "",
   });
+  const [saveAddress, setSaveAddress] = useState(false);
 
   useEffect(() => {
-    if (basket && !basket.clientSecret && activeStep === 1) {
-      createPaymentIntent()
-        .unwrap()
-        .then((response) => {
-          if (response.clientSecret) {
-            setClientSecret(response.clientSecret);
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to create payment intent:", error);
-        });
-    } else if (basket?.clientSecret) {
-      setClientSecret(basket.clientSecret);
+    if (activeStep === 1 && basket) {
+      if (!basket.clientSecret) {
+        createPaymentIntent()
+          .unwrap()
+          .then((response) => {
+            if (response.clientSecret) {
+              setClientSecret(response.clientSecret);
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to create payment intent:", error);
+            setClientSecret(undefined);
+          });
+      } else {
+        setClientSecret(basket.clientSecret);
+      }
+    } else if (activeStep !== 1) {
+      setClientSecret(undefined);
     }
   }, [basket, activeStep, createPaymentIntent]);
 
@@ -150,13 +158,6 @@ export default function CheckoutPage() {
       default:
         return true;
     }
-  };
-
-  const stripeOptions: StripeElementsOptions = {
-    clientSecret: clientSecret,
-    appearance: {
-      theme: "stripe",
-    },
   };
 
   return (
@@ -317,6 +318,17 @@ export default function CheckoutPage() {
                     }
                   />
                 </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={saveAddress}
+                        onChange={(e) => setSaveAddress(e.target.checked)}
+                      />
+                    }
+                    label="Save this address for future orders"
+                  />
+                </Grid>
               </Grid>
 
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
@@ -344,8 +356,28 @@ export default function CheckoutPage() {
               )}
 
               {!isCreatingIntent && clientSecret && (
-                <Elements stripe={stripePromise} options={stripeOptions}>
-                  <StripePaymentForm />
+                <Elements
+                  key={clientSecret}
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret: clientSecret,
+                    appearance: {
+                      theme: "stripe",
+                    },
+                  }}
+                >
+                  <StripePaymentForm
+                    shippingAddress={{
+                      name: shippingAddress.fullName,
+                      line1: shippingAddress.addressLine1,
+                      line2: shippingAddress.addressLine2,
+                      city: shippingAddress.city,
+                      state: shippingAddress.province,
+                      postal_code: shippingAddress.postalCode,
+                      country: "ZA",
+                    }}
+                    saveAddress={saveAddress}
+                  />
                 </Elements>
               )}
 

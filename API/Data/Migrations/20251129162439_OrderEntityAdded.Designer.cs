@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20251129162439_OrderEntityAdded")]
+    partial class OrderEntityAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
@@ -435,33 +438,6 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("API.Entities.OrderAggregate.Order", b =>
                 {
-                    b.OwnsOne("API.Entities.OrderAggregate.PaymentSummary", "PaymentSummary", b1 =>
-                        {
-                            b1.Property<int>("OrderId")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("Brand")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("ExpMonth")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("ExpYear")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("Last4")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("OrderId");
-
-                            b1.ToTable("Orders");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OrderId");
-                        });
-
                     b.OwnsOne("API.Entities.OrderAggregate.ShippingAddress", "ShippingAddress", b1 =>
                         {
                             b1.Property<int>("OrderId")
@@ -502,8 +478,6 @@ namespace API.Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("OrderId");
                         });
-
-                    b.Navigation("PaymentSummary");
 
                     b.Navigation("ShippingAddress")
                         .IsRequired();

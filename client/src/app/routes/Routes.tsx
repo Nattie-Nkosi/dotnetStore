@@ -8,6 +8,8 @@ import ContactPage from "../../features/contact/ContactPage";
 import BasketPage from "../../features/basket/BasketPage";
 import CheckoutPage from "../../features/checkout/CheckoutPage";
 import OrderSuccess from "../../features/checkout/OrderSuccess";
+import Orders from "../../features/orders/Orders";
+import OrderDetails from "../../features/orders/OrderDetails";
 import NotFound from "../errors/NotFound";
 import ServerError from "../errors/ServerError";
 import LoginPage from "../../features/account/LoginPage";
@@ -38,6 +40,22 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <OrderSuccess />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/orders",
+        element: (
+          <PrivateRoute>
+            <Orders />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/orders/:id",
+        element: (
+          <PrivateRoute>
+            <OrderDetails />
           </PrivateRoute>
         ),
       },
