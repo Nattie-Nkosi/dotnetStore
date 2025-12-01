@@ -18,6 +18,7 @@ DotnetStore is a comprehensive e-commerce platform demonstrating modern full-sta
 - **User Authentication**: Secure registration and login with JWT tokens
 - **Authorization**: Role-based access control for admin and customer features
 - **Payment Processing**: Integrated Stripe payment system with PaymentIntent
+- **Stripe Webhooks**: Automated order creation via Stripe payment events
 - **Order Management**: Complete order history and tracking
 - **Responsive Design**: Mobile-first UI built with Material-UI v6
 - **Dark Mode**: Theme switching with persistent user preferences
@@ -82,6 +83,11 @@ DotnetStore/
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [Git](https://git-scm.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (optional, for PostgreSQL)
+
+### Quick Start
+
+See [QUICKSTART.md](QUICKSTART.md) for a 5-minute setup guide!
 
 ### Installation
 
@@ -111,14 +117,111 @@ DotnetStore/
    - Open your browser and navigate to `https://localhost:3000`
    - The database will be automatically created and seeded with sample products
 
-### Environment Variables
+### Database Options
 
-Create a `.env` file in the API directory with the following:
+**SQLite (Default):** No setup required - works out of the box!
 
-```env
-STRIPE_SECRET_KEY=your_stripe_secret_key
-JWT_SECRET=your_jwt_secret_key
+**PostgreSQL (Recommended for production):**
+```bash
+# Start PostgreSQL with Docker
+docker-compose up -d
+
+# Switch to PostgreSQL in appsettings.Development.json
+# "UsePostgreSQL": true
+
+# Run migrations
+dotnet ef database update
 ```
+
+See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed PostgreSQL setup.
+
+### Stripe Configuration
+
+The Stripe settings are configured in `API/appsettings.Development.json`:
+
+```json
+{
+  "StripeSettings": {
+    "PublishableKey": "pk_test_...",
+    "SecretKey": "sk_test_...",
+    "WebhookSecret": ""
+  }
+}
+```
+
+**Important**: For production, move these to environment variables or Azure Key Vault.
+
+### Setting Up Stripe Webhooks
+
+Webhooks allow Stripe to notify your application when payment events occur, ensuring reliable order creation even if the client disconnects.
+
+#### Local Development with Stripe CLI
+
+1. **Install Stripe CLI**
+   ```bash
+   # Windows (using Scoop)
+   scoop install stripe
+
+   # macOS
+   brew install stripe/stripe-cli/stripe
+
+   # Or download from https://stripe.com/docs/stripe-cli
+   ```
+
+2. **Login to Stripe**
+   ```bash
+   stripe login
+   ```
+
+3. **Forward webhooks to your local API**
+   ```bash
+   stripe listen --forward-to https://localhost:5001/api/webhook
+   ```
+
+   This will output a webhook signing secret like `whsec_xxxxx...`
+
+4. **Update your configuration**
+
+   Copy the webhook secret and add it to `API/appsettings.Development.json`:
+   ```json
+   {
+     "StripeSettings": {
+       "WebhookSecret": "whsec_xxxxx..."
+     }
+   }
+   ```
+
+5. **Test the webhook**
+
+   In a new terminal, trigger a test event:
+   ```bash
+   stripe trigger payment_intent.succeeded
+   ```
+
+#### Production Webhook Setup
+
+1. Go to [Stripe Dashboard → Developers → Webhooks](https://dashboard.stripe.com/webhooks)
+2. Click "Add endpoint"
+3. Enter your production URL: `https://yourdomain.com/api/webhook`
+4. Select events to listen to:
+   - `payment_intent.succeeded`
+   - `payment_intent.payment_failed` (optional)
+5. Copy the webhook signing secret
+6. Add it to your production configuration (environment variables or Azure Key Vault)
+
+#### How Webhooks Work in This Application
+
+1. **Payment Intent Created**: Customer initiates checkout
+2. **Payment Succeeds**: Stripe processes the payment
+3. **Webhook Triggered**: Stripe sends `payment_intent.succeeded` event to your API
+4. **Order Created**: Your webhook handler automatically creates the order
+5. **Confirmation**: Customer sees order confirmation page
+
+**Benefits:**
+- Order creation happens server-side (more secure)
+- Works even if customer closes browser after payment
+- Stripe is the authoritative source of payment status
+- Prevents payment manipulation from client-side
 
 ## Usage
 
@@ -158,8 +261,10 @@ JWT_SECRET=your_jwt_secret_key
 - `POST /api/orders` - Create new order
 
 ### Payment
-- `POST /api/payment` - Create payment intent
-- `GET /api/payment/{basketId}` - Get payment status
+- `POST /api/payments` - Create or update payment intent
+
+### Webhooks
+- `POST /api/webhook` - Stripe webhook endpoint (handles payment events)
 
 ## Development Highlights
 
@@ -175,6 +280,8 @@ JWT_SECRET=your_jwt_secret_key
 - HTTPS enforcement
 - CORS configuration for specific origins
 - SQL injection protection via EF Core parameterization
+- Stripe webhook signature verification
+- Server-side payment validation
 
 ### Performance
 - Lazy loading of routes
@@ -190,12 +297,77 @@ Currently, the project focuses on functional demonstration. Future enhancements 
 - Integration tests for API endpoints
 - E2E tests with Playwright
 
-## Deployment Considerations
+## Deployment
 
-This application is ready for deployment to:
-- **Backend**: Azure App Service, AWS Elastic Beanstalk, or Docker containers
-- **Frontend**: Vercel, Netlify, or Azure Static Web Apps
-- **Database**: Easily migrate from SQLite to SQL Server, PostgreSQL, or MySQL
+### Frontend Deployment
+
+The React frontend is production-ready with optimized builds and environment configuration.
+
+**Quick Deploy:**
+```bash
+cd client
+npm run build:prod
+npm run preview:prod  # Test locally first
+```
+
+**Recommended Platforms:**
+- **Vercel** (Easiest) - Automatic deployments from GitHub
+- **Netlify** - Great DX with continuous deployment
+- **Azure Static Web Apps** - Integrated with Azure backend
+
+**Environment Variables:**
+Set these in your hosting platform:
+```bash
+VITE_API_URL=https://your-api-url.com/api
+VITE_STRIPE_PUBLISHABLE_KEY=pk_live_your_production_key
+```
+
+**Detailed Guide:** See [client/DEPLOYMENT.md](client/DEPLOYMENT.md)
+
+### Backend Deployment
+
+**Recommended Platforms:**
+- **Azure App Service** (F1 Free Tier) - Native .NET support
+- **Render** - Easy deployment with free PostgreSQL
+- **Fly.io** - Docker-based deployment
+- **Oracle Cloud** - Most generous free tier
+
+**Database Migration:**
+Easily migrate from SQLite to:
+- Azure SQL Database (free tier available)
+- PostgreSQL (Render, Railway free tiers)
+- MySQL
+
+**Production Environment Variables:**
+```bash
+StripeSettings__SecretKey=sk_live_...
+StripeSettings__WebhookSecret=whsec_...
+ConnectionStrings__DefaultConnection=...
+```
+
+### CORS Configuration
+
+Update `API/Program.cs` to include your production frontend URL:
+```csharp
+app.UseCors(opt =>
+{
+    opt.AllowAnyHeader()
+       .AllowAnyMethod()
+       .AllowCredentials()
+       .WithOrigins(
+           "https://localhost:3000",              // Development
+           "https://your-frontend-domain.com"     // Production
+       );
+});
+```
+
+### Stripe Webhook Setup (Production)
+
+1. Go to [Stripe Dashboard → Webhooks](https://dashboard.stripe.com/webhooks)
+2. Add endpoint: `https://your-api-domain.com/api/webhook`
+3. Select events: `payment_intent.succeeded`, `payment_intent.payment_failed`
+4. Copy webhook signing secret
+5. Add to production environment variables
 
 ## Roadmap
 

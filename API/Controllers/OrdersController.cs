@@ -1,22 +1,18 @@
 using API.Data;
 using API.DTOs;
-using API.Entities;
-using API.Entities.OrderAggregate;
 using API.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Stripe;
-using Order = API.Entities.OrderAggregate.Order;
-using Address = API.Entities.Address;
+using AppOrderService = API.Services.OrderService;
 
 namespace API.Controllers;
 
 [Authorize]
-public class OrdersController(StoreContext context, IConfiguration config) : BaseApiController
+public class OrdersController(StoreContext context, AppOrderService orderService) : BaseApiController
 {
 	private readonly StoreContext _context = context;
-	private readonly IConfiguration _config = config;
+	private readonly AppOrderService _orderService = orderService;
 
 	[HttpGet]
 	public async Task<ActionResult<List<OrderDto>>> GetOrders()
@@ -57,122 +53,26 @@ public class OrdersController(StoreContext context, IConfiguration config) : Bas
 			return BadRequest(new ProblemDetails { Title = "No payment intent found" });
 		}
 
-		StripeConfiguration.ApiKey = _config["StripeSettings:SecretKey"];
-		var service = new PaymentIntentService();
-		var intent = await service.GetAsync(basket.PaymentIntentId);
+		var existingOrder = await _context.Orders
+			.FirstOrDefaultAsync(o => o.PaymentIntentId == basket.PaymentIntentId);
 
-		if (intent == null)
+		if (existingOrder != null)
 		{
-			return BadRequest(new ProblemDetails { Title = "Payment intent not found" });
+			return CreatedAtRoute("GetOrder", new { id = existingOrder.Id }, existingOrder.Id);
 		}
 
-		if (intent.Status != "succeeded")
+		var order = await _orderService.CreateOrderFromPaymentIntent(
+			basket.PaymentIntentId,
+			orderDto.ShippingAddress,
+			orderDto.SaveAddress,
+			User.GetUsername()
+		);
+
+		if (order == null)
 		{
-			return BadRequest(new ProblemDetails { Title = "Payment not successful" });
+			return BadRequest(new ProblemDetails { Title = "Problem creating order" });
 		}
 
-		var items = new List<OrderItem>();
-		foreach (var item in basket.Items)
-		{
-			var productItem = await _context.Products.FindAsync(item.ProductId);
-			if (productItem == null)
-			{
-				return BadRequest(new ProblemDetails { Title = $"Product {item.ProductId} not found" });
-			}
-
-			if (productItem.QuantityInStock < item.Quantity)
-			{
-				return BadRequest(new ProblemDetails { Title = $"Not enough stock for {productItem.Name}. Only {productItem.QuantityInStock} available." });
-			}
-
-			var itemOrdered = new OrderItem
-			{
-				ProductId = productItem.Id,
-				Product = null!,
-				Name = productItem.Name,
-				PictureUrl = productItem.PictureUrl,
-				Price = productItem.Price,
-				Quantity = item.Quantity
-			};
-			items.Add(itemOrdered);
-			productItem.QuantityInStock -= item.Quantity;
-		}
-
-		if (items.Count == 0)
-		{
-			return BadRequest(new ProblemDetails { Title = "Basket is empty" });
-		}
-
-		var subtotal = items.Sum(item => item.Price * item.Quantity);
-		var deliveryFee = subtotal >= 50000 ? 0 : 5000;
-
-		PaymentSummary? paymentSummary = null;
-		if (intent.PaymentMethod != null)
-		{
-			var paymentMethodService = new PaymentMethodService();
-			var paymentMethod = await paymentMethodService.GetAsync(intent.PaymentMethod.ToString());
-
-			if (paymentMethod?.Card != null)
-			{
-				paymentSummary = new PaymentSummary
-				{
-					Last4 = paymentMethod.Card.Last4,
-					Brand = paymentMethod.Card.Brand,
-					ExpMonth = (int)paymentMethod.Card.ExpMonth,
-					ExpYear = (int)paymentMethod.Card.ExpYear
-				};
-			}
-		}
-
-		var order = new Order
-		{
-			BuyerId = User.GetUsername()!,
-			ShippingAddress = new ShippingAddress
-			{
-				Name = orderDto.ShippingAddress.Name,
-				Line1 = orderDto.ShippingAddress.Line1,
-				Line2 = orderDto.ShippingAddress.Line2,
-				City = orderDto.ShippingAddress.City,
-				State = orderDto.ShippingAddress.State,
-				PostalCode = orderDto.ShippingAddress.PostalCode,
-				Country = orderDto.ShippingAddress.Country
-			},
-			OrderItems = items,
-			Subtotal = subtotal,
-			DeliveryFee = deliveryFee,
-			OrderStatus = OrderStatus.PaymentReceived,
-			PaymentIntentId = basket.PaymentIntentId,
-			PaymentSummary = paymentSummary
-		};
-
-		_context.Orders.Add(order);
-		_context.Baskets.Remove(basket);
-
-		if (orderDto.SaveAddress)
-		{
-			var user = await _context.Users
-				.Include(u => u.Address)
-				.FirstOrDefaultAsync(u => u.UserName == User.GetUsername());
-
-			if (user != null)
-			{
-				user.Address = new Address
-				{
-					Name = orderDto.ShippingAddress.Name,
-					Line1 = orderDto.ShippingAddress.Line1,
-					Line2 = orderDto.ShippingAddress.Line2,
-					City = orderDto.ShippingAddress.City,
-					State = orderDto.ShippingAddress.State,
-					PostalCode = orderDto.ShippingAddress.PostalCode,
-					Country = orderDto.ShippingAddress.Country
-				};
-			}
-		}
-
-		var result = await _context.SaveChangesAsync() > 0;
-
-		if (result) return CreatedAtRoute("GetOrder", new { id = order.Id }, order.Id);
-
-		return BadRequest(new ProblemDetails { Title = "Problem creating order" });
+		return CreatedAtRoute("GetOrder", new { id = order.Id }, order.Id);
 	}
 }

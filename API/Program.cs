@@ -9,13 +9,27 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Configure database based on environment
+var usePostgres = builder.Configuration.GetValue<bool>("UsePostgreSQL");
 builder.Services.AddDbContext<StoreContext>(opt =>
 {
-	opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+	if (usePostgres)
+	{
+		var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
+		opt.UseNpgsql(connectionString);
+		Console.WriteLine("Using PostgreSQL database");
+	}
+	else
+	{
+		opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+		Console.WriteLine("Using SQLite database");
+	}
 });
 builder.Services.AddCors();
 builder.Services.AddTransient<ExceptionMiddleware>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<OrderService>();
 builder.Services.AddIdentityApiEndpoints<User>(opt =>
 {
 	opt.User.RequireUniqueEmail = true;
