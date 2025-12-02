@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(npm install:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(dotnet user-secrets:*)"
     ],
     "deny": [],
     "ask": []
