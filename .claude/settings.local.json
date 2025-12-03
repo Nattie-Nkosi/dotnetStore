@@ -5,7 +5,8 @@
       "Bash(npm install:*)",
       "Bash(netstat:*)",
       "Bash(dotnet user-secrets:*)",
-      "Bash(docker build:*)"
+      "Bash(docker build:*)",
+      "Bash(dotnet:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,15 +1,17 @@
 # DotnetStore - Full-Stack E-Commerce Application
 
-A modern, full-stack e-commerce application built with .NET 9 and React 19, showcasing professional web development practices and cloud-ready architecture.
+A modern, full-stack e-commerce application built with .NET 9 and React 19, featuring a cross-platform mobile app and showcasing professional web development practices with cloud-ready architecture.
 
 ![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)
 ![Material-UI](https://img.shields.io/badge/Material--UI-6.0-007FFF?logo=mui)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
+![MAUI](https://img.shields.io/badge/.NET_MAUI-Cross--Platform-512BD4?logo=dotnet)
 
 ## Overview
 
-DotnetStore is a comprehensive e-commerce platform demonstrating modern full-stack development skills. Built as a portfolio project, it features a robust .NET backend API, a responsive React frontend, and integration with real-world payment processing systems.
+DotnetStore is a comprehensive e-commerce platform demonstrating modern full-stack development skills. Built as a portfolio project, it features a robust .NET backend API, a responsive React web frontend, a cross-platform .NET MAUI mobile app, and integration with real-world payment processing systems. The application is containerized with Docker and production-ready with PostgreSQL database support.
 
 ## Key Features
 
@@ -20,20 +22,25 @@ DotnetStore is a comprehensive e-commerce platform demonstrating modern full-sta
 - **Payment Processing**: Integrated Stripe payment system with PaymentIntent
 - **Stripe Webhooks**: Automated order creation via Stripe payment events
 - **Order Management**: Complete order history and tracking
+- **Cross-Platform Mobile App**: Native mobile experience with .NET MAUI for iOS, Android, and Windows
 - **Responsive Design**: Mobile-first UI built with Material-UI v6
 - **Dark Mode**: Theme switching with persistent user preferences
 - **State Management**: Redux Toolkit for predictable state updates
+- **Containerization**: Docker support for easy deployment and development
+- **Production Database**: PostgreSQL with user secrets for secure configuration
 
 ## Technology Stack
 
 ### Backend
 - **.NET 9**: Latest C# features with minimal APIs
 - **Entity Framework Core**: Code-first database approach with migrations
-- **SQLite**: Lightweight database for development (easily switchable to SQL Server/PostgreSQL)
+- **PostgreSQL**: Production-grade relational database
+- **SQLite**: Lightweight database for development
 - **ASP.NET Core Identity**: User authentication and authorization
 - **Stripe API**: Secure payment processing
+- **User Secrets**: Secure configuration management for sensitive data
 
-### Frontend
+### Web Frontend
 - **React 19**: Modern React with hooks and concurrent features
 - **TypeScript**: Type-safe JavaScript for better development experience
 - **Redux Toolkit**: State management with RTK Query for API calls
@@ -41,7 +48,14 @@ DotnetStore is a comprehensive e-commerce platform demonstrating modern full-sta
 - **React Router**: Client-side routing with protected routes
 - **Vite**: Fast build tool and development server
 
-### Development Tools
+### Mobile App
+- **.NET MAUI**: Cross-platform mobile and desktop framework
+- **XAML**: Declarative UI markup
+- **Multi-targeting**: iOS, Android, macOS, and Windows support
+
+### DevOps & Tools
+- **Docker**: Containerization for consistent environments
+- **Docker Compose**: PostgreSQL and pgAdmin orchestration
 - **ESLint**: Code quality and consistency
 - **Git**: Version control
 
@@ -73,6 +87,16 @@ DotnetStore/
 │   │   └── main.tsx             # Application entry point
 │   └── package.json
 │
+├── MobileApp/                    # Cross-platform mobile app (.NET MAUI)
+│   ├── Platforms/               # Platform-specific code
+│   ├── Resources/               # Images, fonts, and assets
+│   ├── App.xaml                 # Application definition
+│   ├── AppShell.xaml            # Navigation shell
+│   ├── MainPage.xaml            # Main page UI
+│   └── MauiProgram.cs           # App configuration
+│
+├── docker-compose.yml           # PostgreSQL and pgAdmin orchestration
+├── Dockerfile                   # Container image definition
 └── README.md
 ```
 
@@ -83,7 +107,11 @@ DotnetStore/
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [Git](https://git-scm.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (optional, for PostgreSQL)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (recommended for PostgreSQL)
+- **.NET MAUI workload** (optional, for mobile app development):
+  ```bash
+  dotnet workload install maui
+  ```
 
 ### Quick Start
 
@@ -117,39 +145,56 @@ See [QUICKSTART.md](QUICKSTART.md) for a 5-minute setup guide!
    - Open your browser and navigate to `https://localhost:3000`
    - The database will be automatically created and seeded with sample products
 
-### Database Options
+5. **Mobile App Setup** (optional)
+   ```bash
+   cd MobileApp
+   dotnet build
+   dotnet run  # Or run from Visual Studio/VS Code
+   ```
 
-**SQLite (Default):** No setup required - works out of the box!
+### Database Setup
 
-**PostgreSQL (Recommended for production):**
+**Option 1: SQLite (Quick Start)**
+No setup required - works out of the box for development!
+
+**Option 2: PostgreSQL (Recommended)**
 ```bash
 # Start PostgreSQL with Docker
 docker-compose up -d
 
-# Switch to PostgreSQL in appsettings.Development.json
-# "UsePostgreSQL": true
+# Configure user secrets
+cd API
+dotnet user-secrets init
+dotnet user-secrets set "PostgreSQL:Host" "localhost"
+dotnet user-secrets set "PostgreSQL:Port" "5433"
+dotnet user-secrets set "PostgreSQL:Database" "dotnetstore"
+dotnet user-secrets set "PostgreSQL:Username" "dotnetstore"
+dotnet user-secrets set "PostgreSQL:Password" "devpassword123"
 
 # Run migrations
 dotnet ef database update
 ```
 
-See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed PostgreSQL setup.
+**Access pgAdmin:**
+- URL: `http://localhost:5050`
+- Email: `admin@dotnetstore.com`
+- Password: `admin123`
+
+See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed PostgreSQL setup and configuration.
 
 ### Stripe Configuration
 
-The Stripe settings are configured in `API/appsettings.Development.json`:
+**For Development:**
+Configure Stripe using user secrets (recommended) or `appsettings.Development.json`:
 
-```json
-{
-  "StripeSettings": {
-    "PublishableKey": "pk_test_...",
-    "SecretKey": "sk_test_...",
-    "WebhookSecret": ""
-  }
-}
+```bash
+cd API
+dotnet user-secrets set "Stripe:PublishableKey" "pk_test_..."
+dotnet user-secrets set "Stripe:SecretKey" "sk_test_..."
+dotnet user-secrets set "Stripe:WebhookSecret" "whsec_..."
 ```
 
-**Important**: For production, move these to environment variables or Azure Key Vault.
+**Important**: For production, use environment variables, Azure Key Vault, or your hosting platform's secrets management.
 
 ### Setting Up Stripe Webhooks
 
@@ -299,6 +344,34 @@ Currently, the project focuses on functional demonstration. Future enhancements 
 
 ## Deployment
 
+### Docker Deployment
+
+The application includes Docker support for containerized deployment:
+
+**Build and run the API container:**
+```bash
+# Build the Docker image
+docker build -t dotnetstore-api .
+
+# Run the container
+docker run -p 8080:8080 \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  -e ConnectionStrings__DefaultConnection="your-connection-string" \
+  -e StripeSettings__SecretKey="your-secret-key" \
+  dotnetstore-api
+```
+
+**Using Docker Compose for local development:**
+```bash
+# Start PostgreSQL and pgAdmin
+docker-compose up -d
+
+# Stop services
+docker-compose down
+```
+
+The Dockerfile is optimized for production with multi-stage builds, reducing the final image size.
+
 ### Frontend Deployment
 
 The React frontend is production-ready with optimized builds and environment configuration.
@@ -371,6 +444,9 @@ app.UseCors(opt =>
 
 ## Roadmap
 
+- [x] Docker containerization
+- [x] PostgreSQL integration with user secrets
+- [x] Cross-platform mobile app with .NET MAUI
 - [ ] Admin dashboard for product management
 - [ ] Product search and filtering
 - [ ] Product reviews and ratings
@@ -378,18 +454,22 @@ app.UseCors(opt =>
 - [ ] Inventory management
 - [ ] Unit and integration tests
 - [ ] CI/CD pipeline with GitHub Actions
-- [ ] Docker containerization
+- [ ] Mobile app features (cart, checkout, authentication)
 
 ## Learning Outcomes
 
 This project demonstrates proficiency in:
-- Building RESTful APIs with .NET
+- Building RESTful APIs with .NET 9
 - Modern React development with TypeScript
+- Cross-platform mobile development with .NET MAUI
 - State management with Redux Toolkit
 - Authentication and authorization implementation
-- Payment gateway integration
-- Responsive UI design
-- Database design and migrations
+- Payment gateway integration (Stripe)
+- Responsive and mobile-first UI design
+- Database design and EF Core migrations
+- PostgreSQL and SQLite database management
+- Docker containerization and orchestration
+- Secure configuration with user secrets
 - Git version control and best practices
 
 ## Contributing
