@@ -10,28 +10,276 @@
 
     <Grid RowDefinitions="Auto,*" Padding="16">
 
-        <VerticalStackLayout Grid.Row="0" Spacing="12" Margin="0,0,0,12">
+        <VerticalStackLayout Grid.Row="0" Spacing="16" Margin="0,0,0,16">
 
-            <Label
-                Text="Product Catalog"
-                FontSize="26"
-                FontAttributes="Bold"
-                TextColor="#333333" />
+            <HorizontalStackLayout Spacing="12" HorizontalOptions="FillAndExpand">
+                <HorizontalStackLayout Spacing="8" HorizontalOptions="StartAndExpand">
+                    <Label
+                        Text="🛍️"
+                        FontSize="32"
+                        VerticalOptions="Center" />
+                    <Label
+                        Text="Product Catalog"
+                        FontSize="28"
+                        FontAttributes="Bold"
+                        TextColor="#1A1A1A"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
 
-            <Frame
-                Padding="0"
-                CornerRadius="12"
-                BorderColor="#E0E0E0"
+                <Border
+                    Padding="10"
+                    BackgroundColor="{Binding IsFilterVisible, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#512BD4:#F5F5F5'}"
+                    StrokeThickness="0"
+                    HorizontalOptions="End">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#D0D0D0" Offset="0,2" Radius="6" Opacity="0.3" />
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleFilterCommand}" />
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="6">
+                        <Label
+                            Text="🔧"
+                            FontSize="18"
+                            VerticalOptions="Center"
+                            TextColor="{Binding IsFilterVisible, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White:#333333'}" />
+                        <Label
+                            Text="Filters"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            VerticalOptions="Center"
+                            TextColor="{Binding IsFilterVisible, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White:#333333'}" />
+                    </HorizontalStackLayout>
+                </Border>
+            </HorizontalStackLayout>
+
+            <Border
+                Padding="4"
                 BackgroundColor="White"
-                HasShadow="False">
-                <SearchBar
-                    Placeholder="Search products..."
-                    Text="{Binding SearchText}"
-                    SearchCommand="{Binding SearchProductsCommand}"
-                    BackgroundColor="Transparent"
-                    PlaceholderColor="Gray"
-                    TextColor="#333333" />
-            </Frame>
+                StrokeThickness="1.5"
+                Stroke="#E0E0E0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="16" />
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#E0E0E0" Offset="0,2" Radius="4" Opacity="0.2" />
+                </Border.Shadow>
+                <HorizontalStackLayout Spacing="8" Padding="8,0">
+                    <Label
+                        Text="🔍"
+                        FontSize="20"
+                        VerticalOptions="Center"
+                        Margin="4,0,0,0" />
+                    <SearchBar
+                        Placeholder="Search for products..."
+                        Text="{Binding SearchText}"
+                        SearchCommand="{Binding SearchProductsCommand}"
+                        BackgroundColor="Transparent"
+                        PlaceholderColor="#999999"
+                        TextColor="#333333"
+                        HorizontalOptions="FillAndExpand" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Filter Panel -->
+            <Border
+                Padding="20"
+                BackgroundColor="White"
+                StrokeThickness="0"
+                IsVisible="{Binding IsFilterVisible}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#D0D0D0" Offset="0,4" Radius="12" Opacity="0.3" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="16">
+
+                    <Label
+                        Text="🎯 Filter &amp; Sort"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#1A1A1A" />
+
+                    <!-- Brand Filter -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label
+                            Text="Brand"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="#757575" />
+                        <Border
+                            Padding="12,0"
+                            BackgroundColor="#FAFAFA"
+                            StrokeThickness="1"
+                            Stroke="#E0E0E0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Picker
+                                ItemsSource="{Binding Brands}"
+                                SelectedItem="{Binding SelectedBrand}"
+                                TextColor="#333333"
+                                FontSize="15" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Type Filter -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label
+                            Text="Category"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="#757575" />
+                        <Border
+                            Padding="12,0"
+                            BackgroundColor="#FAFAFA"
+                            StrokeThickness="1"
+                            Stroke="#E0E0E0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Picker
+                                ItemsSource="{Binding Types}"
+                                SelectedItem="{Binding SelectedType}"
+                                TextColor="#333333"
+                                FontSize="15" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Sort Options -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label
+                            Text="Sort By"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="#757575" />
+                        <Border
+                            Padding="12,0"
+                            BackgroundColor="#FAFAFA"
+                            StrokeThickness="1"
+                            Stroke="#E0E0E0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Picker
+                                ItemsSource="{Binding SortOptions}"
+                                SelectedItem="{Binding SelectedSortOption}"
+                                TextColor="#333333"
+                                FontSize="15" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- In Stock Only -->
+                    <Border
+                        Padding="16,12"
+                        BackgroundColor="#F5F5F5"
+                        StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+                        <HorizontalStackLayout Spacing="12">
+                            <CheckBox
+                                IsChecked="{Binding ShowInStockOnly}"
+                                Color="#512BD4"
+                                VerticalOptions="Center" />
+                            <Label
+                                Text="Show In Stock Only"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                TextColor="#333333"
+                                VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Clear Filters Button -->
+                    <Border
+                        Padding="16,12"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="2"
+                        Stroke="#FFCDD2"
+                        Margin="0,8,0,0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ClearFiltersCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label
+                            Text="🗑️ Clear All Filters"
+                            FontSize="15"
+                            FontAttributes="Bold"
+                            TextColor="#F44336"
+                            HorizontalOptions="Center" />
+                    </Border>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Results Count and Active Filters -->
+            <HorizontalStackLayout Spacing="12" IsVisible="{Binding IsFilterVisible, Converter={StaticResource InvertedBoolConverter}}">
+                <Border
+                    Padding="10,6"
+                    BackgroundColor="#F5F5F5"
+                    StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <Label
+                        Text="{Binding Products.Count, StringFormat='📦 {0} products'}"
+                        FontSize="13"
+                        FontAttributes="Bold"
+                        TextColor="#666666" />
+                </Border>
+
+                <Border
+                    Padding="10,6"
+                    BackgroundColor="#EDE7F6"
+                    StrokeThickness="0"
+                    IsVisible="{Binding SelectedBrand, Converter={StaticResource EqualConverter}, ConverterParameter='All Brands', Converter={StaticResource InvertedBoolConverter}}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <Label
+                        Text="{Binding SelectedBrand, StringFormat='Brand: {0}'}"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="#512BD4" />
+                </Border>
+
+                <Border
+                    Padding="10,6"
+                    BackgroundColor="#EDE7F6"
+                    StrokeThickness="0"
+                    IsVisible="{Binding SelectedType, Converter={StaticResource EqualConverter}, ConverterParameter='All Types', Converter={StaticResource InvertedBoolConverter}}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <Label
+                        Text="{Binding SelectedType, StringFormat='Type: {0}'}"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="#512BD4" />
+                </Border>
+
+                <Border
+                    Padding="10,6"
+                    BackgroundColor="#E8F5E9"
+                    StrokeThickness="0"
+                    IsVisible="{Binding ShowInStockOnly}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <Label
+                        Text="In Stock Only"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="#2E7D32" />
+                </Border>
+            </HorizontalStackLayout>
 
         </VerticalStackLayout>
 
@@ -57,137 +305,171 @@
 
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:Product">
-                                <Frame
-                                    Padding="12"
-                                    Margin="0,0,0,12"
+                                <Border
+                                    StrokeThickness="0"
                                     BackgroundColor="White"
-                                    BorderColor="#E0E0E0"
-                                    CornerRadius="12"
-                                    HasShadow="True">
+                                    Padding="0"
+                                    Margin="0,0,0,16">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="20" />
+                                    </Border.StrokeShape>
+                                    <Border.Shadow>
+                                        <Shadow Brush="#D0D0D0" Offset="0,4" Radius="12" Opacity="0.3" />
+                                    </Border.Shadow>
 
-                                    <Frame.GestureRecognizers>
+                                    <Border.GestureRecognizers>
                                         <TapGestureRecognizer
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:CatalogViewModel}}, Path=ProductTappedCommand}"
                                             CommandParameter="{Binding .}" />
-                                    </Frame.GestureRecognizers>
+                                    </Border.GestureRecognizers>
 
-                                    <Grid ColumnDefinitions="120,*" ColumnSpacing="12">
+                                    <Grid ColumnDefinitions="130,*" ColumnSpacing="16" Padding="12">
 
                                         <!-- Product Image with Badge -->
                                         <Grid Grid.Column="0">
-                                            <Frame
-                                                Padding="8"
-                                                BackgroundColor="#F5F5F5"
-                                                BorderColor="Transparent"
-                                                CornerRadius="8"
-                                                HeightRequest="120"
-                                                WidthRequest="120"
-                                                HasShadow="False">
+                                            <Border
+                                                Padding="12"
+                                                BackgroundColor="#FAFAFA"
+                                                StrokeThickness="0"
+                                                HeightRequest="130"
+                                                WidthRequest="130">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="16" />
+                                                </Border.StrokeShape>
                                                 <Image
                                                     Source="{Binding FullImageUrl}"
                                                     Aspect="AspectFit" />
-                                            </Frame>
+                                            </Border>
 
                                             <!-- Stock Badge Overlay -->
-                                            <Frame
-                                                Padding="6,3"
-                                                CornerRadius="6"
-                                                HasShadow="False"
+                                            <Border
+                                                Padding="8,4"
                                                 HorizontalOptions="Start"
                                                 VerticalOptions="Start"
-                                                Margin="4"
+                                                Margin="6"
                                                 BackgroundColor="{Binding IsInStock, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4CAF50:#F44336'}">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="8" />
+                                                </Border.StrokeShape>
                                                 <Label
                                                     Text="{Binding IsInStock, Converter={StaticResource BoolToStockConverter}}"
                                                     FontSize="9"
                                                     FontAttributes="Bold"
                                                     TextColor="White" />
-                                            </Frame>
+                                            </Border>
                                         </Grid>
 
                                         <!-- Product Details -->
-                                        <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                        <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
 
                                             <!-- Brand & Type Chips -->
-                                            <HorizontalStackLayout Spacing="4">
-                                                <Frame
-                                                    Padding="6,3"
-                                                    CornerRadius="6"
-                                                    BackgroundColor="#E3F2FD"
-                                                    BorderColor="#512BD4"
-                                                    HasShadow="False">
+                                            <HorizontalStackLayout Spacing="6">
+                                                <Border
+                                                    Padding="8,4"
+                                                    BackgroundColor="#EDE7F6"
+                                                    StrokeThickness="0">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="8" />
+                                                    </Border.StrokeShape>
                                                     <Label
                                                         Text="{Binding Brand}"
-                                                        FontSize="10"
+                                                        FontSize="11"
+                                                        FontAttributes="Bold"
                                                         TextColor="#512BD4" />
-                                                </Frame>
-                                                <Frame
-                                                    Padding="6,3"
-                                                    CornerRadius="6"
+                                                </Border>
+                                                <Border
+                                                    Padding="8,4"
                                                     BackgroundColor="#F5F5F5"
-                                                    BorderColor="#E0E0E0"
-                                                    HasShadow="False">
+                                                    StrokeThickness="0">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="8" />
+                                                    </Border.StrokeShape>
                                                     <Label
                                                         Text="{Binding Type}"
-                                                        FontSize="10"
+                                                        FontSize="11"
                                                         TextColor="#666666" />
-                                                </Frame>
+                                                </Border>
                                             </HorizontalStackLayout>
 
                                             <!-- Product Name -->
                                             <Label
                                                 Text="{Binding Name}"
-                                                FontSize="16"
+                                                FontSize="17"
                                                 FontAttributes="Bold"
-                                                TextColor="#333333"
+                                                TextColor="#1A1A1A"
                                                 LineBreakMode="WordWrap"
                                                 MaxLines="2" />
 
                                             <!-- Description -->
                                             <Label
                                                 Text="{Binding Description}"
-                                                FontSize="12"
-                                                TextColor="#666666"
+                                                FontSize="13"
+                                                TextColor="#757575"
                                                 LineBreakMode="TailTruncation"
                                                 MaxLines="2" />
 
                                             <!-- Price -->
                                             <Label
                                                 Text="{Binding FormattedPrice}"
-                                                FontSize="20"
+                                                FontSize="22"
                                                 FontAttributes="Bold"
                                                 TextColor="#512BD4"
-                                                Margin="0,4,0,0" />
+                                                Margin="0,2,0,0" />
 
                                             <!-- Free Delivery -->
-                                            <HorizontalStackLayout
-                                                Spacing="4"
+                                            <Border
+                                                Padding="8,4"
+                                                BackgroundColor="#E8F5E9"
+                                                HorizontalOptions="Start"
+                                                StrokeThickness="0"
                                                 IsVisible="{Binding HasFreeDelivery}">
-                                                <Label
-                                                    Text="🚚"
-                                                    FontSize="12" />
-                                                <Label
-                                                    Text="Free Delivery"
-                                                    FontSize="11"
-                                                    FontAttributes="Bold"
-                                                    TextColor="#4CAF50" />
-                                            </HorizontalStackLayout>
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="8" />
+                                                </Border.StrokeShape>
+                                                <HorizontalStackLayout Spacing="4">
+                                                    <Label
+                                                        Text="🚚"
+                                                        FontSize="12"
+                                                        VerticalOptions="Center" />
+                                                    <Label
+                                                        Text="Free Delivery"
+                                                        FontSize="11"
+                                                        FontAttributes="Bold"
+                                                        TextColor="#2E7D32"
+                                                        VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+                                            </Border>
 
                                         </VerticalStackLayout>
 
                                     </Grid>
-                                </Frame>
+                                </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
-                    <Label
-                        Text="No products found"
+                    <VerticalStackLayout
+                        Spacing="16"
                         IsVisible="{Binding Products.Count, Converter={StaticResource EqualConverter}, ConverterParameter=0}"
                         HorizontalOptions="Center"
-                        TextColor="#666666"
-                        FontSize="16"
-                        Margin="0,40,0,0" />
+                        VerticalOptions="Center"
+                        Margin="0,80,0,0">
+                        <Label
+                            Text="🔍"
+                            FontSize="72"
+                            HorizontalOptions="Center" />
+                        <Label
+                            Text="No products found"
+                            FontSize="20"
+                            FontAttributes="Bold"
+                            TextColor="#333333"
+                            HorizontalOptions="Center" />
+                        <Label
+                            Text="Try adjusting your search"
+                            FontSize="14"
+                            TextColor="#666666"
+                            HorizontalOptions="Center" />
+                    </VerticalStackLayout>
 
                 </VerticalStackLayout>
             </ScrollView>

@@ -16,6 +16,9 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Product> featuredProducts = new();
 
+    [ObservableProperty]
+    private ObservableCollection<string> categories = new();
+
     public HomeViewModel(IProductService productService)
     {
         _productService = productService;
@@ -38,6 +41,13 @@ public partial class HomeViewModel : ObservableObject
                 FeaturedProducts.Add(product);
             }
 
+            Categories.Clear();
+            var uniqueTypes = products.Select(p => p.Type).Distinct().OrderBy(t => t).Take(6);
+            foreach (var type in uniqueTypes)
+            {
+                Categories.Add(type);
+            }
+
             if (!products.Any())
             {
                 await Shell.Current.DisplayAlert(
@@ -57,6 +67,15 @@ public partial class HomeViewModel : ObservableObject
         {
             IsLoading = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task CategoryTappedAsync(string category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            return;
+
+        await Shell.Current.GoToAsync($"//CatalogPage?category={category}");
     }
 
     [RelayCommand]

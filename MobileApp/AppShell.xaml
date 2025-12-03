@@ -7,31 +7,65 @@
     Title="DotnetStore"
     FlyoutBackgroundColor="White"
     Shell.BackgroundColor="White"
-    Shell.ForegroundColor="#333333"
-    Shell.TitleColor="#333333"
+    Shell.ForegroundColor="#757575"
+    Shell.TitleColor="#1A1A1A"
     Shell.TabBarBackgroundColor="White"
-    Shell.TabBarForegroundColor="#666666"
-    Shell.TabBarUnselectedColor="#999999"
-    Shell.TabBarTitleColor="#333333">
+    Shell.TabBarForegroundColor="#512BD4"
+    Shell.TabBarUnselectedColor="#B0B0B0"
+    Shell.TabBarTitleColor="#1A1A1A"
+    Shell.NavBarHasShadow="True">
+
+    <Shell.Resources>
+        <Style x:Key="TabBarStyle" TargetType="TabBar">
+            <Setter Property="Shell.TabBarBackgroundColor" Value="White" />
+            <Setter Property="Shell.TabBarForegroundColor" Value="#512BD4" />
+            <Setter Property="Shell.TabBarTitleColor" Value="#1A1A1A" />
+            <Setter Property="Shell.TabBarUnselectedColor" Value="#B0B0B0" />
+        </Style>
+    </Shell.Resources>
 
     <TabBar>
         <ShellContent
             Title="Home"
             Icon="home.png"
             ContentTemplate="{DataTemplate pages:HomePage}"
-            Route="HomePage" />
+            Route="HomePage">
+            <ShellContent.Icon>
+                <FontImageSource
+                    FontFamily="OpenSansRegular"
+                    Glyph="🏠"
+                    Size="24"
+                    Color="#512BD4" />
+            </ShellContent.Icon>
+        </ShellContent>
 
         <ShellContent
             Title="Catalog"
             Icon="catalog.png"
             ContentTemplate="{DataTemplate pages:CatalogPage}"
-            Route="CatalogPage" />
+            Route="CatalogPage">
+            <ShellContent.Icon>
+                <FontImageSource
+                    FontFamily="OpenSansRegular"
+                    Glyph="🛍️"
+                    Size="24"
+                    Color="#512BD4" />
+            </ShellContent.Icon>
+        </ShellContent>
 
         <ShellContent
             Title="Cart"
             Icon="cart.png"
             ContentTemplate="{DataTemplate pages:BasketPage}"
-            Route="BasketPage" />
+            Route="BasketPage">
+            <ShellContent.Icon>
+                <FontImageSource
+                    FontFamily="OpenSansRegular"
+                    Glyph="🛒"
+                    Size="24"
+                    Color="#512BD4" />
+            </ShellContent.Icon>
+        </ShellContent>
     </TabBar>
 
 </Shell>

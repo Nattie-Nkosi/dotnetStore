@@ -22,11 +22,66 @@ public partial class CatalogViewModel : ObservableObject
     [ObservableProperty]
     private string searchText = string.Empty;
 
+    [ObservableProperty]
+    private ObservableCollection<string> brands = new();
+
+    [ObservableProperty]
+    private ObservableCollection<string> types = new();
+
+    [ObservableProperty]
+    private string? selectedBrand;
+
+    [ObservableProperty]
+    private string? selectedType;
+
+    [ObservableProperty]
+    private string selectedSortOption = "Name A-Z";
+
+    [ObservableProperty]
+    private bool showInStockOnly = false;
+
+    [ObservableProperty]
+    private bool isFilterVisible = false;
+
+    public ObservableCollection<string> SortOptions { get; } = new()
+    {
+        "Name A-Z",
+        "Name Z-A",
+        "Price: Low to High",
+        "Price: High to Low",
+        "Stock: High to Low"
+    };
+
     private List<Product> _allProducts = new();
 
     public CatalogViewModel(IProductService productService)
     {
         _productService = productService;
+    }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        ApplyFiltersAndSort();
+    }
+
+    partial void OnSelectedBrandChanged(string? value)
+    {
+        ApplyFiltersAndSort();
+    }
+
+    partial void OnSelectedTypeChanged(string? value)
+    {
+        ApplyFiltersAndSort();
+    }
+
+    partial void OnSelectedSortOptionChanged(string value)
+    {
+        ApplyFiltersAndSort();
+    }
+
+    partial void OnShowInStockOnlyChanged(bool value)
+    {
+        ApplyFiltersAndSort();
     }
 
     [RelayCommand]
@@ -40,11 +95,23 @@ public partial class CatalogViewModel : ObservableObject
             IsLoading = true;
             _allProducts = await _productService.GetProductsAsync();
 
-            Products.Clear();
-            foreach (var product in _allProducts)
+            Brands.Clear();
+            Brands.Add("All Brands");
+            var uniqueBrands = _allProducts.Select(p => p.Brand).Distinct().OrderBy(b => b);
+            foreach (var brand in uniqueBrands)
             {
-                Products.Add(product);
+                Brands.Add(brand);
             }
+
+            Types.Clear();
+            Types.Add("All Types");
+            var uniqueTypes = _allProducts.Select(p => p.Type).Distinct().OrderBy(t => t);
+            foreach (var type in uniqueTypes)
+            {
+                Types.Add(type);
+            }
+
+            ApplyFiltersAndSort();
 
             if (!_allProducts.Any())
             {
@@ -75,11 +142,23 @@ public partial class CatalogViewModel : ObservableObject
             IsRefreshing = true;
             _allProducts = await _productService.GetProductsAsync();
 
-            Products.Clear();
-            foreach (var product in _allProducts)
+            Brands.Clear();
+            Brands.Add("All Brands");
+            var uniqueBrands = _allProducts.Select(p => p.Brand).Distinct().OrderBy(b => b);
+            foreach (var brand in uniqueBrands)
             {
-                Products.Add(product);
+                Brands.Add(brand);
             }
+
+            Types.Clear();
+            Types.Add("All Types");
+            var uniqueTypes = _allProducts.Select(p => p.Type).Distinct().OrderBy(t => t);
+            foreach (var type in uniqueTypes)
+            {
+                Types.Add(type);
+            }
+
+            ApplyFiltersAndSort();
         }
         catch (Exception ex)
         {
@@ -94,24 +173,65 @@ public partial class CatalogViewModel : ObservableObject
     [RelayCommand]
     private void SearchProducts()
     {
-        if (string.IsNullOrWhiteSpace(SearchText))
+        ApplyFiltersAndSort();
+    }
+
+    [RelayCommand]
+    private void ToggleFilter()
+    {
+        IsFilterVisible = !IsFilterVisible;
+    }
+
+    [RelayCommand]
+    private void ClearFilters()
+    {
+        SelectedBrand = null;
+        SelectedType = null;
+        ShowInStockOnly = false;
+        SearchText = string.Empty;
+        SelectedSortOption = "Name A-Z";
+    }
+
+    private void ApplyFiltersAndSort()
+    {
+        var filtered = _allProducts.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            Products.Clear();
-            foreach (var product in _allProducts)
-            {
-                Products.Add(product);
-            }
-            return;
+            filtered = filtered.Where(p =>
+                p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                p.Brand.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                p.Type.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                p.Description.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
         }
 
-        var filtered = _allProducts
-            .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                       p.Brand.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                       p.Type.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        if (!string.IsNullOrWhiteSpace(SelectedBrand) && SelectedBrand != "All Brands")
+        {
+            filtered = filtered.Where(p => p.Brand == SelectedBrand);
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedType) && SelectedType != "All Types")
+        {
+            filtered = filtered.Where(p => p.Type == SelectedType);
+        }
+
+        if (ShowInStockOnly)
+        {
+            filtered = filtered.Where(p => p.IsInStock);
+        }
+
+        var sorted = SelectedSortOption switch
+        {
+            "Name A-Z" => filtered.OrderBy(p => p.Name),
+            "Name Z-A" => filtered.OrderByDescending(p => p.Name),
+            "Price: Low to High" => filtered.OrderBy(p => p.Price),
+            "Price: High to Low" => filtered.OrderByDescending(p => p.Price),
+            "Stock: High to Low" => filtered.OrderByDescending(p => p.QuantityInStock),
+            _ => filtered.OrderBy(p => p.Name)
+        };
 
         Products.Clear();
-        foreach (var product in filtered)
+        foreach (var product in sorted)
         {
             Products.Add(product);
         }

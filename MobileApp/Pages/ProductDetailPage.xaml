@@ -23,140 +23,158 @@
                 IsVisible="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}">
 
                 <!-- Product Image Section -->
-                <Frame
-                    Padding="24"
+                <Border
+                    Padding="0"
                     BackgroundColor="White"
-                    BorderColor="#E0E0E0"
-                    CornerRadius="16"
-                    HasShadow="True">
-                    <Grid>
+                    StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="24" />
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#D0D0D0" Offset="0,4" Radius="16" Opacity="0.25" />
+                    </Border.Shadow>
+                    <Grid Padding="24">
                         <!-- Stock Badge -->
-                        <Frame
-                            Padding="8,4"
-                            CornerRadius="8"
-                            HasShadow="False"
+                        <Border
+                            Padding="12,6"
                             HorizontalOptions="Start"
                             VerticalOptions="Start"
                             BackgroundColor="{Binding Product.IsInStock, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4CAF50:#F44336'}">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.2" />
+                            </Border.Shadow>
                             <Label
                                 Text="{Binding Product.IsInStock, Converter={StaticResource BoolToStockConverter}}"
-                                FontSize="12"
+                                FontSize="13"
                                 FontAttributes="Bold"
                                 TextColor="White" />
-                        </Frame>
+                        </Border>
 
                         <!-- Product Image -->
                         <Image
                             Source="{Binding Product.FullImageUrl}"
                             Aspect="AspectFit"
-                            HeightRequest="300"
-                            Margin="0,40,0,0" />
+                            HeightRequest="320"
+                            Margin="0,50,0,0" />
                     </Grid>
-                </Frame>
+                </Border>
 
                 <!-- Product Info Section -->
-                <Frame
-                    Padding="20"
+                <Border
+                    Padding="24"
                     BackgroundColor="White"
-                    BorderColor="#E0E0E0"
-                    CornerRadius="16"
-                    HasShadow="True">
-                    <VerticalStackLayout Spacing="12">
+                    StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="24" />
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#D0D0D0" Offset="0,4" Radius="16" Opacity="0.25" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="14">
 
                         <!-- Brand & Type -->
-                        <HorizontalStackLayout Spacing="6">
-                            <Frame
-                                Padding="8,4"
-                                CornerRadius="8"
-                                BackgroundColor="#E3F2FD"
-                                BorderColor="#512BD4"
-                                HasShadow="False">
+                        <HorizontalStackLayout Spacing="8">
+                            <Border
+                                Padding="10,6"
+                                BackgroundColor="#EDE7F6"
+                                StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
                                 <Label
                                     Text="{Binding Product.Brand}"
-                                    FontSize="12"
+                                    FontSize="13"
                                     FontAttributes="Bold"
                                     TextColor="#512BD4" />
-                            </Frame>
-                            <Frame
-                                Padding="8,4"
-                                CornerRadius="8"
+                            </Border>
+                            <Border
+                                Padding="10,6"
                                 BackgroundColor="#F5F5F5"
-                                BorderColor="#E0E0E0"
-                                HasShadow="False">
+                                StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
                                 <Label
                                     Text="{Binding Product.Type}"
-                                    FontSize="12"
+                                    FontSize="13"
                                     TextColor="#666666" />
-                            </Frame>
+                            </Border>
                         </HorizontalStackLayout>
 
                         <!-- Product Name -->
                         <Label
                             Text="{Binding Product.Name}"
-                            FontSize="28"
+                            FontSize="30"
                             FontAttributes="Bold"
-                            TextColor="#333333"
+                            TextColor="#1A1A1A"
                             LineBreakMode="WordWrap" />
 
                         <!-- Price -->
                         <Label
                             Text="{Binding Product.FormattedPrice}"
-                            FontSize="32"
+                            FontSize="36"
                             FontAttributes="Bold"
                             TextColor="#512BD4" />
 
                         <!-- Free Delivery -->
-                        <Frame
-                            Padding="8,4"
-                            CornerRadius="8"
+                        <Border
+                            Padding="12,6"
                             BackgroundColor="#E8F5E9"
-                            BorderColor="#4CAF50"
-                            HasShadow="False"
+                            StrokeThickness="0"
                             HorizontalOptions="Start"
                             IsVisible="{Binding Product.HasFreeDelivery}">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
                             <HorizontalStackLayout Spacing="6">
                                 <Label
                                     Text="🚚"
-                                    FontSize="14" />
+                                    FontSize="16"
+                                    VerticalOptions="Center" />
                                 <Label
                                     Text="Free Delivery"
-                                    FontSize="12"
+                                    FontSize="13"
                                     FontAttributes="Bold"
-                                    TextColor="#4CAF50" />
+                                    TextColor="#2E7D32"
+                                    VerticalOptions="Center" />
                             </HorizontalStackLayout>
-                        </Frame>
+                        </Border>
 
                         <!-- Divider -->
                         <BoxView
-                            Color="#E0E0E0"
-                            HeightRequest="1"
-                            Margin="0,8" />
+                            Color="#EEEEEE"
+                            HeightRequest="1.5"
+                            Margin="0,12" />
 
                         <!-- Description -->
                         <Label
-                            Text="Product Description"
-                            FontSize="18"
+                            Text="📄 Product Description"
+                            FontSize="20"
                             FontAttributes="Bold"
-                            TextColor="#333333" />
+                            TextColor="#1A1A1A" />
 
                         <Label
                             Text="{Binding Product.Description}"
-                            FontSize="14"
-                            TextColor="#666666"
-                            LineBreakMode="WordWrap" />
+                            FontSize="15"
+                            TextColor="#757575"
+                            LineBreakMode="WordWrap"
+                            LineHeight="1.4" />
 
                         <!-- Product Details -->
                         <BoxView
-                            Color="#E0E0E0"
-                            HeightRequest="1"
-                            Margin="0,8" />
+                            Color="#EEEEEE"
+                            HeightRequest="1.5"
+                            Margin="0,12" />
 
                         <Label
-                            Text="Product Details"
-                            FontSize="18"
+                            Text="ℹ️ Product Details"
+                            FontSize="20"
                             FontAttributes="Bold"
-                            TextColor="#333333"
-                            Margin="0,0,0,8" />
+                            TextColor="#1A1A1A"
+                            Margin="0,0,0,12" />
 
                         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                             <Label
@@ -203,85 +221,123 @@
                         </Grid>
 
                     </VerticalStackLayout>
-                </Frame>
+                </Border>
 
                 <!-- Quantity & Add to Cart Section -->
-                <Frame
-                    Padding="20"
+                <Border
+                    Padding="24"
                     BackgroundColor="White"
-                    BorderColor="#E0E0E0"
-                    CornerRadius="16"
-                    HasShadow="True">
-                    <VerticalStackLayout Spacing="16">
+                    StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="24" />
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#D0D0D0" Offset="0,4" Radius="16" Opacity="0.25" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="20">
 
                         <Label
-                            Text="Quantity"
-                            FontSize="16"
+                            Text="🛒 Select Quantity"
+                            FontSize="20"
                             FontAttributes="Bold"
-                            TextColor="#333333" />
+                            TextColor="#1A1A1A" />
 
                         <!-- Quantity Selector -->
-                        <Frame
-                            Padding="0"
-                            BorderColor="#E0E0E0"
-                            CornerRadius="12"
-                            HasShadow="False">
-                            <Grid ColumnDefinitions="*,2*,*" HeightRequest="50">
+                        <Border
+                            Padding="4"
+                            StrokeThickness="2"
+                            Stroke="#EEEEEE">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="16" />
+                            </Border.StrokeShape>
+                            <Grid ColumnDefinitions="*,2*,*" HeightRequest="56">
                                 <Button
                                     Grid.Column="0"
-                                    Text="-"
-                                    FontSize="24"
+                                    Text="−"
+                                    FontSize="28"
                                     FontAttributes="Bold"
                                     BackgroundColor="#F5F5F5"
                                     TextColor="#512BD4"
-                                    CornerRadius="12"
+                                    CornerRadius="14"
+                                    Margin="2"
                                     Command="{Binding DecreaseQuantityCommand}" />
 
-                                <Label
+                                <Border
                                     Grid.Column="1"
-                                    Text="{Binding Quantity}"
-                                    FontSize="20"
-                                    FontAttributes="Bold"
-                                    TextColor="#333333"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center" />
+                                    BackgroundColor="#FAFAFA"
+                                    StrokeThickness="0"
+                                    Margin="4,2">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="12" />
+                                    </Border.StrokeShape>
+                                    <Label
+                                        Text="{Binding Quantity}"
+                                        FontSize="24"
+                                        FontAttributes="Bold"
+                                        TextColor="#1A1A1A"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center" />
+                                </Border>
 
                                 <Button
                                     Grid.Column="2"
                                     Text="+"
-                                    FontSize="24"
+                                    FontSize="28"
                                     FontAttributes="Bold"
                                     BackgroundColor="#F5F5F5"
                                     TextColor="#512BD4"
-                                    CornerRadius="12"
+                                    CornerRadius="14"
+                                    Margin="2"
                                     Command="{Binding IncreaseQuantityCommand}" />
                             </Grid>
-                        </Frame>
+                        </Border>
 
                         <!-- Add to Cart Button -->
-                        <Button
-                            Text="Add to Cart"
-                            FontSize="18"
-                            FontAttributes="Bold"
-                            BackgroundColor="#512BD4"
-                            TextColor="White"
-                            CornerRadius="12"
-                            Padding="16"
-                            Command="{Binding AddToCartCommand}"
-                            IsEnabled="{Binding Product.IsInStock}" />
+                        <Border
+                            StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="16" />
+                            </Border.StrokeShape>
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#512BD4" Offset="0.0" />
+                                    <GradientStop Color="#7B4FDB" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Shadow>
+                                <Shadow Brush="#512BD4" Offset="0,4" Radius="12" Opacity="0.3" />
+                            </Border.Shadow>
+                            <Button
+                                Text="🛒 Add to Cart"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                BackgroundColor="Transparent"
+                                TextColor="White"
+                                HeightRequest="56"
+                                Command="{Binding AddToCartCommand}"
+                                IsEnabled="{Binding Product.IsInStock}" />
+                        </Border>
 
                     </VerticalStackLayout>
-                </Frame>
+                </Border>
 
                 <!-- Back to Catalog Button -->
-                <Button
-                    Text="← Continue Shopping"
-                    FontSize="16"
+                <Border
+                    Padding="16,12"
                     BackgroundColor="Transparent"
-                    TextColor="#512BD4"
-                    CornerRadius="12"
-                    Padding="16"
-                    Clicked="OnBackToCatalogClicked" />
+                    StrokeThickness="2"
+                    Stroke="#512BD4">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+                    <Button
+                        Text="← Continue Shopping"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        BackgroundColor="Transparent"
+                        TextColor="#512BD4"
+                        Clicked="OnBackToCatalogClicked" />
+                </Border>
 
             </VerticalStackLayout>
 
