@@ -3,12 +3,35 @@
     x:Class="MobileApp.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MobileApp"
-    Title="MobileApp">
+    xmlns:pages="clr-namespace:MobileApp.Pages"
+    Title="DotnetStore"
+    FlyoutBackgroundColor="White"
+    Shell.BackgroundColor="White"
+    Shell.ForegroundColor="#333333"
+    Shell.TitleColor="#333333"
+    Shell.TabBarBackgroundColor="White"
+    Shell.TabBarForegroundColor="#666666"
+    Shell.TabBarUnselectedColor="#999999"
+    Shell.TabBarTitleColor="#333333">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <ShellContent
+            Title="Home"
+            Icon="home.png"
+            ContentTemplate="{DataTemplate pages:HomePage}"
+            Route="HomePage" />
+
+        <ShellContent
+            Title="Catalog"
+            Icon="catalog.png"
+            ContentTemplate="{DataTemplate pages:CatalogPage}"
+            Route="CatalogPage" />
+
+        <ShellContent
+            Title="Cart"
+            Icon="cart.png"
+            ContentTemplate="{DataTemplate pages:BasketPage}"
+            Route="BasketPage" />
+    </TabBar>
 
 </Shell>

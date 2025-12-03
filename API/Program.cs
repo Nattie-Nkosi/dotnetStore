@@ -45,7 +45,13 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseCors(opt =>
 {
-	opt.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins("https://localhost:3000");
+	opt.AllowAnyHeader()
+	   .AllowAnyMethod()
+	   .AllowCredentials()
+	   .WithOrigins("https://localhost:3000")
+	   .SetIsOriginAllowedToAllowWildcardSubdomains();
+
+	opt.WithExposedHeaders("*");
 });
 
 app.UseAuthentication();

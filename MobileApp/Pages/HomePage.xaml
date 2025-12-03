@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:MobileApp.ViewModels"
+             xmlns:models="clr-namespace:MobileApp.Models"
+             x:Class="MobileApp.Pages.HomePage"
+             x:DataType="viewmodels:HomeViewModel"
+             Title="Home"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="20">
+
+            <!-- Hero Section -->
+            <Frame
+                CornerRadius="16"
+                HasShadow="True"
+                Padding="24"
+                BackgroundColor="#512BD4"
+                Margin="0,0,0,20">
+                <VerticalStackLayout Spacing="12">
+                    <Label
+                        Text="Welcome to DotnetStore"
+                        FontSize="28"
+                        FontAttributes="Bold"
+                        TextColor="White"
+                        HorizontalOptions="Center" />
+
+                    <Label
+                        Text="Your one-stop shop for quality products"
+                        FontSize="16"
+                        TextColor="White"
+                        Opacity="0.9"
+                        HorizontalOptions="Center" />
+
+                    <Button
+                        Text="Browse Catalog"
+                        Command="{Binding NavigateToCatalogCommand}"
+                        BackgroundColor="White"
+                        TextColor="#512BD4"
+                        FontAttributes="Bold"
+                        CornerRadius="12"
+                        Padding="15"
+                        Margin="0,12,0,0" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Featured Products Header -->
+            <Label
+                Text="Featured Products"
+                FontSize="24"
+                FontAttributes="Bold"
+                TextColor="#333333"
+                Margin="0,0,0,8" />
+
+            <ActivityIndicator
+                IsRunning="{Binding IsLoading}"
+                IsVisible="{Binding IsLoading}"
+                Color="#512BD4"
+                HeightRequest="40" />
+
+            <!-- Featured Products Grid -->
+            <CollectionView
+                ItemsSource="{Binding FeaturedProducts}"
+                IsVisible="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"
+                SelectionMode="None">
+
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout
+                        Orientation="Vertical"
+                        Span="2"
+                        HorizontalItemSpacing="12"
+                        VerticalItemSpacing="12" />
+                </CollectionView.ItemsLayout>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Product">
+                        <Frame
+                            Padding="12"
+                            BackgroundColor="White"
+                            BorderColor="#E0E0E0"
+                            CornerRadius="12"
+                            HasShadow="True">
+
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HomeViewModel}}, Path=ProductTappedCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+
+                            <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+
+                                <!-- Stock Badge -->
+                                <Frame
+                                    Grid.Row="0"
+                                    Padding="6,4"
+                                    CornerRadius="8"
+                                    HasShadow="False"
+                                    HorizontalOptions="Start"
+                                    BackgroundColor="{Binding IsInStock, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4CAF50:#F44336'}"
+                                    Margin="0,0,0,8">
+                                    <Label
+                                        Text="{Binding IsInStock, Converter={StaticResource BoolToStockConverter}}"
+                                        FontSize="10"
+                                        FontAttributes="Bold"
+                                        TextColor="White" />
+                                </Frame>
+
+                                <!-- Product Image -->
+                                <Frame
+                                    Grid.Row="1"
+                                    Padding="12"
+                                    BackgroundColor="#F5F5F5"
+                                    BorderColor="Transparent"
+                                    CornerRadius="8"
+                                    HeightRequest="140"
+                                    HasShadow="False">
+                                    <Image
+                                        Source="{Binding FullImageUrl}"
+                                        Aspect="AspectFit" />
+                                </Frame>
+
+                                <!-- Brand & Type -->
+                                <HorizontalStackLayout Grid.Row="2" Spacing="4" Margin="0,8,0,0">
+                                    <Frame
+                                        Padding="6,3"
+                                        CornerRadius="6"
+                                        BackgroundColor="#E3F2FD"
+                                        BorderColor="#512BD4"
+                                        HasShadow="False">
+                                        <Label
+                                            Text="{Binding Brand}"
+                                            FontSize="10"
+                                            TextColor="#512BD4" />
+                                    </Frame>
+                                    <Frame
+                                        Padding="6,3"
+                                        CornerRadius="6"
+                                        BackgroundColor="#F5F5F5"
+                                        BorderColor="#E0E0E0"
+                                        HasShadow="False">
+                                        <Label
+                                            Text="{Binding Type}"
+                                            FontSize="10"
+                                            TextColor="#666666" />
+                                    </Frame>
+                                </HorizontalStackLayout>
+
+                                <!-- Product Name -->
+                                <Label
+                                    Grid.Row="3"
+                                    Text="{Binding Name}"
+                                    FontSize="14"
+                                    FontAttributes="Bold"
+                                    TextColor="#333333"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="2"
+                                    Margin="0,8,0,0" />
+
+                                <!-- Price -->
+                                <Label
+                                    Grid.Row="4"
+                                    Text="{Binding FormattedPrice}"
+                                    FontSize="18"
+                                    FontAttributes="Bold"
+                                    TextColor="#512BD4"
+                                    Margin="0,4,0,0" />
+
+                                <!-- Free Delivery Badge -->
+                                <HorizontalStackLayout
+                                    Grid.Row="5"
+                                    Spacing="4"
+                                    Margin="0,4,0,0"
+                                    IsVisible="{Binding HasFreeDelivery}">
+                                    <Label
+                                        Text="🚚"
+                                        FontSize="12" />
+                                    <Label
+                                        Text="Free Delivery"
+                                        FontSize="11"
+                                        FontAttributes="Bold"
+                                        TextColor="#4CAF50" />
+                                </HorizontalStackLayout>
+
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- No Products Message -->
+            <Label
+                Text="No products available"
+                IsVisible="{Binding FeaturedProducts.Count, Converter={StaticResource EqualConverter}, ConverterParameter=0}"
+                HorizontalOptions="Center"
+                TextColor="#666666"
+                FontSize="16"
+                Margin="0,40,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

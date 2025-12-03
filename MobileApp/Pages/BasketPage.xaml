@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:MobileApp.ViewModels"
+             xmlns:models="clr-namespace:MobileApp.Models"
+             x:Class="MobileApp.Pages.BasketPage"
+             x:DataType="viewmodels:BasketViewModel"
+             Title="Shopping Cart"
+             BackgroundColor="#F5F5F5">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="16" Padding="16">
+
+                <!-- Header -->
+                <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                    <Label
+                        Text="🛒"
+                        FontSize="32" />
+                    <VerticalStackLayout Spacing="2">
+                        <Label
+                            Text="Your Shopping Cart"
+                            FontSize="24"
+                            FontAttributes="Bold"
+                            TextColor="#333333" />
+                        <Label
+                            Text="{Binding TotalItems, StringFormat='{0} items'}"
+                            FontSize="14"
+                            TextColor="#666666" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator
+                    IsRunning="{Binding IsLoading}"
+                    IsVisible="{Binding IsLoading}"
+                    Color="#512BD4"
+                    HeightRequest="40"
+                    Margin="0,40,0,0" />
+
+                <!-- Empty Cart Message -->
+                <VerticalStackLayout
+                    Spacing="20"
+                    Padding="40"
+                    IsVisible="{Binding BasketItems.Count, Converter={StaticResource EqualConverter}, ConverterParameter=0}"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    Margin="0,60,0,0">
+                    <Label
+                        Text="🛍️"
+                        FontSize="80"
+                        HorizontalOptions="Center" />
+                    <Label
+                        Text="Your cart is empty"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#333333"
+                        HorizontalOptions="Center" />
+                    <Label
+                        Text="Add some products to get started!"
+                        FontSize="14"
+                        TextColor="#666666"
+                        HorizontalOptions="Center" />
+                    <Button
+                        Text="Continue Shopping"
+                        Command="{Binding ContinueShoppingCommand}"
+                        BackgroundColor="#512BD4"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="12"
+                        Padding="20,12"
+                        Margin="0,20,0,0" />
+                </VerticalStackLayout>
+
+                <!-- Cart Items -->
+                <CollectionView
+                    ItemsSource="{Binding BasketItems}"
+                    IsVisible="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"
+                    SelectionMode="None">
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:BasketItem">
+                            <Frame
+                                Padding="12"
+                                Margin="0,0,0,12"
+                                BackgroundColor="White"
+                                BorderColor="#E0E0E0"
+                                CornerRadius="12"
+                                HasShadow="True">
+
+                                <Grid ColumnDefinitions="100,*,Auto" ColumnSpacing="12">
+
+                                    <!-- Product Image -->
+                                    <Frame
+                                        Grid.Column="0"
+                                        Padding="8"
+                                        BackgroundColor="#F5F5F5"
+                                        BorderColor="Transparent"
+                                        CornerRadius="8"
+                                        HeightRequest="100"
+                                        WidthRequest="100"
+                                        HasShadow="False">
+                                        <Image
+                                            Source="{Binding FullImageUrl}"
+                                            Aspect="AspectFit" />
+                                    </Frame>
+
+                                    <!-- Product Info -->
+                                    <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+
+                                        <Label
+                                            Text="{Binding Name}"
+                                            FontSize="16"
+                                            FontAttributes="Bold"
+                                            TextColor="#333333"
+                                            LineBreakMode="WordWrap"
+                                            MaxLines="2" />
+
+                                        <HorizontalStackLayout Spacing="6">
+                                            <Frame
+                                                Padding="6,3"
+                                                CornerRadius="6"
+                                                BackgroundColor="#E3F2FD"
+                                                BorderColor="#512BD4"
+                                                HasShadow="False">
+                                                <Label
+                                                    Text="{Binding Brand}"
+                                                    FontSize="10"
+                                                    TextColor="#512BD4" />
+                                            </Frame>
+                                        </HorizontalStackLayout>
+
+                                        <Label
+                                            Text="{Binding FormattedPrice}"
+                                            FontSize="18"
+                                            FontAttributes="Bold"
+                                            TextColor="#512BD4" />
+
+                                        <Label
+                                            Text="{Binding FormattedSubtotal, StringFormat='Subtotal: {0}'}"
+                                            FontSize="14"
+                                            TextColor="#666666" />
+
+                                    </VerticalStackLayout>
+
+                                    <!-- Quantity Controls -->
+                                    <VerticalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+
+                                        <!-- Quantity Adjuster -->
+                                        <Frame
+                                            Padding="4"
+                                            BorderColor="#E0E0E0"
+                                            CornerRadius="8"
+                                            HasShadow="False">
+                                            <VerticalStackLayout Spacing="4">
+                                                <Button
+                                                    Text="+"
+                                                    FontSize="16"
+                                                    FontAttributes="Bold"
+                                                    BackgroundColor="#F5F5F5"
+                                                    TextColor="#512BD4"
+                                                    CornerRadius="6"
+                                                    WidthRequest="40"
+                                                    HeightRequest="40"
+                                                    Padding="0"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:BasketViewModel}}, Path=IncreaseQuantityCommand}"
+                                                    CommandParameter="{Binding .}" />
+
+                                                <Label
+                                                    Text="{Binding Quantity}"
+                                                    FontSize="16"
+                                                    FontAttributes="Bold"
+                                                    TextColor="#333333"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center"
+                                                    WidthRequest="40"
+                                                    HeightRequest="30"
+                                                    HorizontalTextAlignment="Center"
+                                                    VerticalTextAlignment="Center" />
+
+                                                <Button
+                                                    Text="-"
+                                                    FontSize="16"
+                                                    FontAttributes="Bold"
+                                                    BackgroundColor="#F5F5F5"
+                                                    TextColor="#512BD4"
+                                                    CornerRadius="6"
+                                                    WidthRequest="40"
+                                                    HeightRequest="40"
+                                                    Padding="0"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:BasketViewModel}}, Path=DecreaseQuantityCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </VerticalStackLayout>
+                                        </Frame>
+
+                                        <!-- Remove Button -->
+                                        <Button
+                                            Text="🗑️"
+                                            FontSize="18"
+                                            BackgroundColor="#FFEBEE"
+                                            TextColor="#F44336"
+                                            CornerRadius="8"
+                                            WidthRequest="48"
+                                            HeightRequest="48"
+                                            Padding="0"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:BasketViewModel}}, Path=RemoveItemCommand}"
+                                            CommandParameter="{Binding .}" />
+
+                                    </VerticalStackLayout>
+
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Clear Cart Button -->
+                <Button
+                    Text="Clear Cart"
+                    Command="{Binding ClearBasketCommand}"
+                    IsVisible="{Binding BasketItems.Count, Converter={StaticResource EqualConverter}, ConverterParameter=0, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="#FFEBEE"
+                    TextColor="#F44336"
+                    FontAttributes="Bold"
+                    CornerRadius="12"
+                    Padding="16"
+                    Margin="0,0,0,20" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Bottom Summary Card -->
+        <Frame
+            Grid.Row="1"
+            Padding="20"
+            BackgroundColor="White"
+            BorderColor="#E0E0E0"
+            CornerRadius="16,16,0,0"
+            HasShadow="True"
+            IsVisible="{Binding BasketItems.Count, Converter={StaticResource EqualConverter}, ConverterParameter=0, Converter={StaticResource InvertedBoolConverter}}">
+
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Total -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label
+                        Grid.Column="0"
+                        Text="Total"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#333333"
+                        VerticalOptions="Center" />
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding TotalAmount}"
+                        FontSize="28"
+                        FontAttributes="Bold"
+                        TextColor="#512BD4"
+                        VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Checkout Button -->
+                <Button
+                    Text="Proceed to Checkout"
+                    Command="{Binding CheckoutCommand}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    CornerRadius="12"
+                    Padding="16" />
+
+                <!-- Continue Shopping Link -->
+                <Button
+                    Text="Continue Shopping"
+                    Command="{Binding ContinueShoppingCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#512BD4"
+                    FontSize="14"
+                    CornerRadius="12"
+                    Padding="8" />
+
+            </VerticalStackLayout>
+        </Frame>
+
+    </Grid>
+
+</ContentPage>

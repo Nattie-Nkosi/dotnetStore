@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:MobileApp.ViewModels"
+             x:Class="MobileApp.Pages.ProductDetailPage"
+             x:DataType="viewmodels:ProductDetailViewModel"
+             Title="Product Details"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <ActivityIndicator
+                IsRunning="{Binding IsLoading}"
+                IsVisible="{Binding IsLoading}"
+                Color="#512BD4"
+                HeightRequest="60"
+                Margin="0,40,0,0" />
+
+            <VerticalStackLayout
+                Spacing="16"
+                Padding="16"
+                IsVisible="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}">
+
+                <!-- Product Image Section -->
+                <Frame
+                    Padding="24"
+                    BackgroundColor="White"
+                    BorderColor="#E0E0E0"
+                    CornerRadius="16"
+                    HasShadow="True">
+                    <Grid>
+                        <!-- Stock Badge -->
+                        <Frame
+                            Padding="8,4"
+                            CornerRadius="8"
+                            HasShadow="False"
+                            HorizontalOptions="Start"
+                            VerticalOptions="Start"
+                            BackgroundColor="{Binding Product.IsInStock, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4CAF50:#F44336'}">
+                            <Label
+                                Text="{Binding Product.IsInStock, Converter={StaticResource BoolToStockConverter}}"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                TextColor="White" />
+                        </Frame>
+
+                        <!-- Product Image -->
+                        <Image
+                            Source="{Binding Product.FullImageUrl}"
+                            Aspect="AspectFit"
+                            HeightRequest="300"
+                            Margin="0,40,0,0" />
+                    </Grid>
+                </Frame>
+
+                <!-- Product Info Section -->
+                <Frame
+                    Padding="20"
+                    BackgroundColor="White"
+                    BorderColor="#E0E0E0"
+                    CornerRadius="16"
+                    HasShadow="True">
+                    <VerticalStackLayout Spacing="12">
+
+                        <!-- Brand & Type -->
+                        <HorizontalStackLayout Spacing="6">
+                            <Frame
+                                Padding="8,4"
+                                CornerRadius="8"
+                                BackgroundColor="#E3F2FD"
+                                BorderColor="#512BD4"
+                                HasShadow="False">
+                                <Label
+                                    Text="{Binding Product.Brand}"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#512BD4" />
+                            </Frame>
+                            <Frame
+                                Padding="8,4"
+                                CornerRadius="8"
+                                BackgroundColor="#F5F5F5"
+                                BorderColor="#E0E0E0"
+                                HasShadow="False">
+                                <Label
+                                    Text="{Binding Product.Type}"
+                                    FontSize="12"
+                                    TextColor="#666666" />
+                            </Frame>
+                        </HorizontalStackLayout>
+
+                        <!-- Product Name -->
+                        <Label
+                            Text="{Binding Product.Name}"
+                            FontSize="28"
+                            FontAttributes="Bold"
+                            TextColor="#333333"
+                            LineBreakMode="WordWrap" />
+
+                        <!-- Price -->
+                        <Label
+                            Text="{Binding Product.FormattedPrice}"
+                            FontSize="32"
+                            FontAttributes="Bold"
+                            TextColor="#512BD4" />
+
+                        <!-- Free Delivery -->
+                        <Frame
+                            Padding="8,4"
+                            CornerRadius="8"
+                            BackgroundColor="#E8F5E9"
+                            BorderColor="#4CAF50"
+                            HasShadow="False"
+                            HorizontalOptions="Start"
+                            IsVisible="{Binding Product.HasFreeDelivery}">
+                            <HorizontalStackLayout Spacing="6">
+                                <Label
+                                    Text="🚚"
+                                    FontSize="14" />
+                                <Label
+                                    Text="Free Delivery"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#4CAF50" />
+                            </HorizontalStackLayout>
+                        </Frame>
+
+                        <!-- Divider -->
+                        <BoxView
+                            Color="#E0E0E0"
+                            HeightRequest="1"
+                            Margin="0,8" />
+
+                        <!-- Description -->
+                        <Label
+                            Text="Product Description"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#333333" />
+
+                        <Label
+                            Text="{Binding Product.Description}"
+                            FontSize="14"
+                            TextColor="#666666"
+                            LineBreakMode="WordWrap" />
+
+                        <!-- Product Details -->
+                        <BoxView
+                            Color="#E0E0E0"
+                            HeightRequest="1"
+                            Margin="0,8" />
+
+                        <Label
+                            Text="Product Details"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#333333"
+                            Margin="0,0,0,8" />
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                            <Label
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Text="Brand:"
+                                FontSize="14"
+                                TextColor="#666666" />
+                            <Label
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Text="{Binding Product.Brand}"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#333333" />
+
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Text="Category:"
+                                FontSize="14"
+                                TextColor="#666666" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Text="{Binding Product.Type}"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#333333" />
+
+                            <Label
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                Text="In Stock:"
+                                FontSize="14"
+                                TextColor="#666666" />
+                            <Label
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Text="{Binding Product.QuantityInStock}"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#333333" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Quantity & Add to Cart Section -->
+                <Frame
+                    Padding="20"
+                    BackgroundColor="White"
+                    BorderColor="#E0E0E0"
+                    CornerRadius="16"
+                    HasShadow="True">
+                    <VerticalStackLayout Spacing="16">
+
+                        <Label
+                            Text="Quantity"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            TextColor="#333333" />
+
+                        <!-- Quantity Selector -->
+                        <Frame
+                            Padding="0"
+                            BorderColor="#E0E0E0"
+                            CornerRadius="12"
+                            HasShadow="False">
+                            <Grid ColumnDefinitions="*,2*,*" HeightRequest="50">
+                                <Button
+                                    Grid.Column="0"
+                                    Text="-"
+                                    FontSize="24"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="#F5F5F5"
+                                    TextColor="#512BD4"
+                                    CornerRadius="12"
+                                    Command="{Binding DecreaseQuantityCommand}" />
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="{Binding Quantity}"
+                                    FontSize="20"
+                                    FontAttributes="Bold"
+                                    TextColor="#333333"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+
+                                <Button
+                                    Grid.Column="2"
+                                    Text="+"
+                                    FontSize="24"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="#F5F5F5"
+                                    TextColor="#512BD4"
+                                    CornerRadius="12"
+                                    Command="{Binding IncreaseQuantityCommand}" />
+                            </Grid>
+                        </Frame>
+
+                        <!-- Add to Cart Button -->
+                        <Button
+                            Text="Add to Cart"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            CornerRadius="12"
+                            Padding="16"
+                            Command="{Binding AddToCartCommand}"
+                            IsEnabled="{Binding Product.IsInStock}" />
+
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Back to Catalog Button -->
+                <Button
+                    Text="← Continue Shopping"
+                    FontSize="16"
+                    BackgroundColor="Transparent"
+                    TextColor="#512BD4"
+                    CornerRadius="12"
+                    Padding="16"
+                    Clicked="OnBackToCatalogClicked" />
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

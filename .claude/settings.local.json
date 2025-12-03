@@ -6,7 +6,8 @@
       "Bash(netstat:*)",
       "Bash(dotnet user-secrets:*)",
       "Bash(docker build:*)",
-      "Bash(dotnet:*)"
+      "Bash(dotnet:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
