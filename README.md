@@ -13,6 +13,61 @@ A modern, full-stack e-commerce application built with .NET 9 and React 19, feat
 
 DotnetStore is a comprehensive e-commerce platform demonstrating modern full-stack development skills. Built as a portfolio project, it features a robust .NET backend API, a responsive React web frontend, a cross-platform .NET MAUI mobile app, and integration with real-world payment processing systems. The application is containerized with Docker and production-ready with PostgreSQL database support.
 
+## Application Screenshots
+
+### Home Page
+The landing page features a hero section with featured products and quick navigation.
+
+![Home Page](images/home-page.png)
+
+### Product Catalog
+Browse all available products with filtering and sorting capabilities.
+
+![Catalog Page](images/catalog-page.png)
+
+### Product Details
+Detailed product information with the ability to add items to cart.
+
+![Product Details](images/product-details.png)
+
+### Shopping Cart
+Review your cart items and proceed to checkout.
+
+![Shopping Cart](images/cart-page.png)
+
+### User Authentication
+Secure registration and login system.
+
+<div style="display: flex; gap: 10px;">
+  <img src="images/register-page.png" alt="Register Page" width="49%" />
+  <img src="images/login-page.png" alt="Login Page" width="49%" />
+</div>
+
+### Checkout Flow
+Complete multi-step checkout process with Stripe payment integration.
+
+**Step 1: Shipping Information**
+![Checkout - Shipping](images/checkout-page.png)
+
+**Step 2: Payment Details**
+![Checkout - Payment](images/checkout-payment-page.png)
+
+**Step 3: Order Confirmation**
+![Checkout - Confirmation](images/checkout-page-order.png)
+
+### Order History
+View detailed information about past orders.
+
+![Order Details](images/order-details-page.png)
+
+### Error Handling
+Professional error pages for better user experience.
+
+<div style="display: flex; gap: 10px;">
+  <img src="images/404-not-found-page.png" alt="404 Page" width="49%" />
+  <img src="images/server-error-page.png" alt="Server Error Page" width="49%" />
+</div>
+
 ## Key Features
 
 - **Product Catalog**: Browse products with images, descriptions, and pricing
