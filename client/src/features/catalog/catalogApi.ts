@@ -7,6 +7,7 @@ import { setMetaData } from "./catalogSlice";
 export const catalogApi = createApi({
   reducerPath: "catalogApi",
   baseQuery: baseQueryWithErrorHandling,
+  tagTypes: ["Products"],
   endpoints: (builder) => ({
     fetchProducts: builder.query<Product[], ProductParams | void>({
       query: (params) => {
@@ -18,6 +19,7 @@ export const catalogApi = createApi({
           params,
         };
       },
+      providesTags: ["Products"],
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const { meta } = await queryFulfilled;

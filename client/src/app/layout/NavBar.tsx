@@ -24,7 +24,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import MenuIcon from "@mui/icons-material/Menu";
-import { LogoutOutlined, PersonOutline, LocationOnOutlined, ReceiptLongOutlined } from "@mui/icons-material";
+import { LogoutOutlined, PersonOutline, LocationOnOutlined, ReceiptLongOutlined, Inventory2Outlined } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useFetchBasketQuery } from "../../features/basket/basketApi";
@@ -266,6 +266,23 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                           primaryTypographyProps={{ fontSize: "0.875rem" }}
                         />
                       </MenuItem>
+                      {user?.roles.includes("Admin") && (
+                        <MenuItem
+                          onClick={() => {
+                            handleUserMenuClose();
+                            navigate("/inventory");
+                          }}
+                          sx={{ py: 1.5, px: 2 }}
+                        >
+                          <ListItemIcon>
+                            <Inventory2Outlined fontSize="small" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary="Inventory"
+                            primaryTypographyProps={{ fontSize: "0.875rem" }}
+                          />
+                        </MenuItem>
+                      )}
                       <MenuItem
                         onClick={handleUserMenuClose}
                         sx={{ py: 1.5, px: 2 }}
@@ -517,6 +534,33 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                     }}
                   />
                 </ListItem>
+                {user?.roles.includes("Admin") && (
+                  <ListItem
+                    onClick={() => {
+                      toggleMobileMenu();
+                      navigate("/inventory");
+                    }}
+                    sx={{
+                      borderRadius: 2,
+                      mb: 1,
+                      backgroundColor: "transparent",
+                      "&:hover": {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                      },
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Inventory2Outlined fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Inventory"
+                      primaryTypographyProps={{
+                        fontWeight: 500,
+                        color: theme.palette.text.primary,
+                      }}
+                    />
+                  </ListItem>
+                )}
                 <ListItem
                   onClick={toggleMobileMenu}
                   sx={{

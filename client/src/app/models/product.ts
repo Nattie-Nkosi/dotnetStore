@@ -7,6 +7,7 @@ export type Product = {
 	type: string
 	brand: string
 	quantityInStock: number
+	publicId?: string
 }
 
 export interface ProductParams {

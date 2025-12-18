@@ -16,6 +16,8 @@ import LoginPage from "../../features/account/LoginPage";
 import RegisterPage from "../../features/account/RegisterPage";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
+import AdminRoute from "./AdminRoute";
+import Inventory from "../../features/admin/Inventory";
 
 export const router = createBrowserRouter([
   {
@@ -73,6 +75,14 @@ export const router = createBrowserRouter([
           <PublicRoute>
             <RegisterPage />
           </PublicRoute>
+        ),
+      },
+      {
+        path: "/inventory",
+        element: (
+          <AdminRoute>
+            <Inventory />
+          </AdminRoute>
         ),
       },
       { path: "/about", element: <AboutPage /> },

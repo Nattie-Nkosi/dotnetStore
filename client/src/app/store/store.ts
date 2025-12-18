@@ -9,6 +9,7 @@ import { uiSlice } from "./uiSlice";
 import { accountApi } from "../../features/account/accountApi";
 import { paymentApi } from "../../features/payment/paymentApi";
 import { ordersApi } from "../../features/orders/ordersApi";
+import { adminApi } from "../../features/admin/adminApi";
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     [accountApi.reducerPath]: accountApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
+    [adminApi.reducerPath]: adminApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -29,7 +31,8 @@ export const store = configureStore({
       buggyApi.middleware,
       accountApi.middleware,
       paymentApi.middleware,
-      ordersApi.middleware
+      ordersApi.middleware,
+      adminApi.middleware
     ),
 });
 
