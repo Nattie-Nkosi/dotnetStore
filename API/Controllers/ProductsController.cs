@@ -1,15 +1,19 @@
 using API.Data;
+using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.RequestHelpers;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
-	public class ProductsController(StoreContext context) : BaseApiController
+	public class ProductsController(StoreContext context, IMapper mapper) : BaseApiController
 	{
 		private readonly StoreContext context = context;
+		private readonly IMapper mapper = mapper;
 
 		[HttpGet]
 		public async Task<ActionResult<List<Product>>> GetProducts([FromQuery] ProductParams productParams)
@@ -25,7 +29,7 @@ namespace API.Controllers
 
 			return products.Items;
 		}
-		
+
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Product>> GetProduct(int id)
 		{
@@ -41,6 +45,18 @@ namespace API.Controllers
 			var types = await context.Products.Select(p => p.Type).Distinct().ToListAsync();
 
 			return Ok(new { brands, types });
+		}
+
+		[Authorize(Roles = "Admin")]
+		[HttpPost]
+		public async Task<ActionResult<Product>> CreateProduct(CreateProductDto createProductDto)
+		{
+			var product = mapper.Map<Product>(createProductDto);
+
+			context.Products.Add(product);
+			await context.SaveChangesAsync();
+
+			return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
 		}
 	}
 }
