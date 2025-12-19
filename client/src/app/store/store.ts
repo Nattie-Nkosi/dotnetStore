@@ -9,18 +9,22 @@ import { uiSlice } from "./uiSlice";
 import { accountApi } from "../../features/account/accountApi";
 import { paymentApi } from "../../features/payment/paymentApi";
 import { ordersApi } from "../../features/orders/ordersApi";
+import { inventoryApi } from "../../features/admin/inventoryApi";
+import { inventorySlice } from "../../features/admin/inventorySlice";
 
 export const store = configureStore({
   reducer: {
     counter: counterSlice.reducer,
     ui: uiSlice.reducer,
     catalog: catalogSlice.reducer,
+    inventory: inventorySlice.reducer,
     [catalogApi.reducerPath]: catalogApi.reducer,
     [basketApi.reducerPath]: basketApi.reducer,
     [buggyApi.reducerPath]: buggyApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
+    [inventoryApi.reducerPath]: inventoryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -29,7 +33,8 @@ export const store = configureStore({
       buggyApi.middleware,
       accountApi.middleware,
       paymentApi.middleware,
-      ordersApi.middleware
+      ordersApi.middleware,
+      inventoryApi.middleware
     ),
 });
 
