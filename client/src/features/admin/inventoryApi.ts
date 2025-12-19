@@ -1,5 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Product, ProductParams, Filters } from "../../app/models/product";
+import { Product } from "../../app/models/product";
+
+interface InventoryParams {
+  pageNumber: number;
+  pageSize: number;
+}
 
 interface PaginationMetaData {
   currentPage: number;
@@ -15,24 +20,19 @@ interface PaginatedResponse {
 
 const baseUrl = import.meta.env.VITE_API_URL || "https://localhost:5001/api";
 
-export const catalogApi = createApi({
-  reducerPath: "catalogApi",
+export const inventoryApi = createApi({
+  reducerPath: "inventoryApi",
   baseQuery: fetchBaseQuery({
     baseUrl,
     credentials: "include",
   }),
-  tagTypes: ["Products"],
+  tagTypes: ["InventoryProducts"],
   endpoints: (builder) => ({
-    fetchProducts: builder.query<PaginatedResponse, ProductParams>({
+    fetchInventoryProducts: builder.query<PaginatedResponse, InventoryParams>({
       queryFn: async (params, _queryApi, _extraOptions, fetchWithBQ) => {
         const searchParams = new URLSearchParams();
-
-        if (params.pageNumber) searchParams.append("pageNumber", params.pageNumber.toString());
-        if (params.pageSize) searchParams.append("pageSize", params.pageSize.toString());
-        if (params.orderBy) searchParams.append("orderBy", params.orderBy);
-        if (params.searchTerm) searchParams.append("searchTerm", params.searchTerm);
-        if (params.brands) searchParams.append("brands", params.brands);
-        if (params.types) searchParams.append("types", params.types);
+        searchParams.append("pageNumber", params.pageNumber.toString());
+        searchParams.append("pageSize", params.pageSize.toString());
 
         const result = await fetchWithBQ(`products?${searchParams.toString()}`);
 
@@ -44,9 +44,9 @@ export const catalogApi = createApi({
         const paginationHeader = result.meta?.response?.headers.get("Pagination");
 
         let metaData: PaginationMetaData = {
-          currentPage: params.pageNumber || 1,
+          currentPage: params.pageNumber,
           totalPages: 1,
-          pageSize: params.pageSize || 8,
+          pageSize: params.pageSize,
           totalCount: products.length,
         };
 
@@ -62,14 +62,7 @@ export const catalogApi = createApi({
           data: { products, metaData },
         };
       },
-      providesTags: ["Products"],
-    }),
-    fetchProductDetails: builder.query<Product, number>({
-      query: (productId) => `products/${productId}`,
-      providesTags: (_result, _error, arg) => [{ type: "Products", id: arg }],
-    }),
-    fetchFilters: builder.query<Filters, void>({
-      query: () => "products/filters",
+      providesTags: ["InventoryProducts"],
     }),
     createProduct: builder.mutation<Product, FormData>({
       query: (formData) => ({
@@ -77,7 +70,7 @@ export const catalogApi = createApi({
         method: "POST",
         body: formData,
       }),
-      invalidatesTags: ["Products"],
+      invalidatesTags: ["InventoryProducts"],
     }),
     updateProduct: builder.mutation<Product, FormData>({
       query: (formData) => ({
@@ -85,23 +78,21 @@ export const catalogApi = createApi({
         method: "PUT",
         body: formData,
       }),
-      invalidatesTags: ["Products"],
+      invalidatesTags: ["InventoryProducts"],
     }),
     deleteProduct: builder.mutation<void, number>({
       query: (id) => ({
         url: `products/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Products"],
+      invalidatesTags: ["InventoryProducts"],
     }),
   }),
 });
 
 export const {
-  useFetchProductsQuery,
-  useFetchProductDetailsQuery,
-  useFetchFiltersQuery,
+  useFetchInventoryProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
-} = catalogApi;
+} = inventoryApi;

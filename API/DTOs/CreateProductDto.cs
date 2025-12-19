@@ -14,7 +14,6 @@ public class CreateProductDto
 	[Range(100, double.MaxValue)]
 	public long Price { get; set; }
 
-	[Required]
 	public string PictureUrl { get; set; } = string.Empty;
 
 	[Required]

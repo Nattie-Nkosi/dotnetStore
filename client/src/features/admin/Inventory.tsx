@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Typography,
@@ -20,17 +19,38 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Pagination as MuiPagination,
+  Skeleton,
+  Divider,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { Edit, Delete, Add } from "@mui/icons-material";
+import { Edit, Delete, Add, Inventory2Outlined } from "@mui/icons-material";
 import { useState } from "react";
-import { useFetchProductsQuery } from "../catalog/catalogApi";
-import { useDeleteProductMutation } from "./adminApi";
+import {
+  useFetchInventoryProductsQuery,
+  useDeleteProductMutation,
+} from "./inventoryApi";
 import { Product } from "../../app/models/product";
 import ProductForm from "./ProductForm";
 import { toast } from "react-toastify";
+import { useAppDispatch, useAppSelector } from "../../app/store/store";
+import { setInventoryPageNumber } from "./inventorySlice";
 
 export default function Inventory() {
-  const { data: products = [], error, isLoading } = useFetchProductsQuery({});
+  const dispatch = useAppDispatch();
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const { pageNumber, pageSize } = useAppSelector((state) => state.inventory);
+
+  const { data, error, isLoading, isFetching } = useFetchInventoryProductsQuery({
+    pageNumber,
+    pageSize,
+  });
+
+  const products = data?.products || [];
+  const metaData = data?.metaData;
+
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -67,8 +87,8 @@ export default function Inventory() {
         toast.success("Product deleted successfully");
         setDeleteDialogOpen(false);
         setProductToDelete(null);
-      } catch (error: any) {
-        toast.error(error?.data?.title || "Failed to delete product");
+      } catch {
+        toast.error("Failed to delete product");
       }
     }
   };
@@ -78,13 +98,10 @@ export default function Inventory() {
     setProductToDelete(null);
   };
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    dispatch(setInventoryPageNumber(page));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (error) {
     return (
@@ -96,6 +113,9 @@ export default function Inventory() {
       </Box>
     );
   }
+
+  const startItem = metaData ? (metaData.currentPage - 1) * metaData.pageSize + 1 : 0;
+  const endItem = metaData ? Math.min(metaData.currentPage * metaData.pageSize, metaData.totalCount) : 0;
 
   return (
     <Box>
@@ -115,7 +135,28 @@ export default function Inventory() {
         </Button>
       </Box>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ position: "relative" }}>
+        {/* Loading Overlay */}
+        {isFetching && !isLoading && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(255, 255, 255, 0.7)",
+              backdropFilter: "blur(2px)",
+              zIndex: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CircularProgress size={48} />
+          </Box>
+        )}
+
         <Table>
           <TableHead>
             <TableRow>
@@ -129,7 +170,19 @@ export default function Inventory() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {products.length === 0 ? (
+            {isLoading ? (
+              [...Array(5)].map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell><Skeleton variant="rounded" width={60} height={60} /></TableCell>
+                  <TableCell><Skeleton variant="text" width={150} /></TableCell>
+                  <TableCell><Skeleton variant="text" width={80} /></TableCell>
+                  <TableCell><Skeleton variant="rounded" width={70} height={24} /></TableCell>
+                  <TableCell><Skeleton variant="rounded" width={70} height={24} /></TableCell>
+                  <TableCell align="center"><Skeleton variant="rounded" width={40} height={24} /></TableCell>
+                  <TableCell align="right"><Skeleton variant="rounded" width={80} height={32} /></TableCell>
+                </TableRow>
+              ))
+            ) : products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center">
                   <Typography variant="body1" color="text.secondary" py={4}>
@@ -201,6 +254,55 @@ export default function Inventory() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination Section */}
+      {metaData && metaData.totalCount > 0 && (
+        <Paper
+          elevation={2}
+          sx={{
+            mt: 3,
+            mb: 4,
+            p: { xs: 2, sm: 3 },
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+            borderRadius: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Inventory2Outlined color="action" fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              Showing <strong>{startItem}-{endItem}</strong> of{" "}
+              <strong>{metaData.totalCount}</strong> products
+            </Typography>
+          </Box>
+
+          {metaData.totalPages > 1 && (
+            <>
+              {!isSmall && <Divider orientation="vertical" flexItem />}
+              <MuiPagination
+                count={metaData.totalPages}
+                page={metaData.currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                size={isSmall ? "small" : "medium"}
+                disabled={isFetching}
+                showFirstButton={!isSmall}
+                showLastButton={!isSmall}
+                siblingCount={isSmall ? 0 : 1}
+                sx={{
+                  "& .MuiPaginationItem-root": {
+                    opacity: isFetching ? 0.5 : 1,
+                    transition: "opacity 0.2s",
+                  },
+                }}
+              />
+            </>
+          )}
+        </Paper>
+      )}
 
       <ProductForm
         open={formOpen}

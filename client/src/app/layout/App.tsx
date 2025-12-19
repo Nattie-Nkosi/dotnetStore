@@ -90,7 +90,7 @@ function App() {
             flex: 1,
             background: theme.palette.background.default,
             pt: { xs: 2, sm: 4, md: 8 },
-            pb: { xs: 4, sm: 5, md: 6 },
+            pb: { xs: 8, sm: 10, md: 12 },
           }}
         >
           <Container

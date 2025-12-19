@@ -3,42 +3,25 @@ import { ProductParams } from "../../app/models/product";
 
 interface CatalogState {
   productParams: ProductParams;
-  metaData: {
-    currentPage: number;
-    totalPages: number;
-    pageSize: number;
-    totalCount: number;
-  } | null;
 }
 
 const initialState: CatalogState = {
   productParams: {
     pageNumber: 1,
     pageSize: 8,
+    orderBy: "name",
   },
-  metaData: null,
 };
 
 export const catalogSlice = createSlice({
   name: "catalog",
   initialState,
   reducers: {
-    setProductParams: (state, action: PayloadAction<ProductParams>) => {
+    setProductParams: (state, action: PayloadAction<Partial<ProductParams>>) => {
       state.productParams = { ...state.productParams, ...action.payload };
     },
     setPageNumber: (state, action: PayloadAction<number>) => {
       state.productParams.pageNumber = action.payload;
-    },
-    setMetaData: (
-      state,
-      action: PayloadAction<{
-        currentPage: number;
-        totalPages: number;
-        pageSize: number;
-        totalCount: number;
-      }>
-    ) => {
-      state.metaData = action.payload;
     },
     resetProductParams: (state) => {
       state.productParams = initialState.productParams;
@@ -46,5 +29,5 @@ export const catalogSlice = createSlice({
   },
 });
 
-export const { setProductParams, setPageNumber, setMetaData, resetProductParams } =
+export const { setProductParams, setPageNumber, resetProductParams } =
   catalogSlice.actions;

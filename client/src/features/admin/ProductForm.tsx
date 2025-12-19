@@ -14,7 +14,10 @@ import {
 import { Close, CloudUpload } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { Product } from "../../app/models/product";
-import { useCreateProductMutation, useUpdateProductMutation } from "./adminApi";
+import {
+  useCreateProductMutation,
+  useUpdateProductMutation,
+} from "./inventoryApi";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -95,7 +98,6 @@ export default function ProductForm({ open, onClose, product }: Props) {
       "price",
       (parseFloat(formData.price) * 100).toString()
     );
-    formDataToSend.append("pictureUrl", formData.pictureUrl || "");
     formDataToSend.append("type", formData.type);
     formDataToSend.append("brand", formData.brand);
     formDataToSend.append("quantityInStock", formData.quantityInStock);

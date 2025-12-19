@@ -11,31 +11,38 @@ import {
   useTheme,
   IconButton,
   Badge,
+  Pagination as MuiPagination,
+  Skeleton,
+  Divider,
 } from "@mui/material";
-import { FilterList, Close } from "@mui/icons-material";
+import { FilterList, Close, Inventory2Outlined } from "@mui/icons-material";
 import { useState } from "react";
 import ProductList from "./ProductList";
 import Filters from "./Filters";
 import Search from "./Search";
 import Sorting from "./Sorting";
-import Pagination from "./Pagination";
 import { useFetchProductsQuery, useFetchFiltersQuery } from "./catalogApi";
 import { useAppDispatch, useAppSelector } from "../../app/store/store";
-import { setProductParams } from "./catalogSlice";
+import { setProductParams, setPageNumber } from "./catalogSlice";
 
 export default function Catalog() {
   const dispatch = useAppDispatch();
   const productParams = useAppSelector((state) => state.catalog.productParams);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const {
-    data: products = [],
+    data,
     error,
     isLoading,
+    isFetching,
   } = useFetchProductsQuery(productParams);
   const { data: filters } = useFetchFiltersQuery();
+
+  const products = data?.products || [];
+  const metaData = data?.metaData;
 
   const handleBrandChange = (brand: string) => {
     const currentBrands =
@@ -66,6 +73,11 @@ export default function Catalog() {
     );
   };
 
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    dispatch(setPageNumber(page));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   if (error) {
     return (
       <Box sx={{ mt: 4 }}>
@@ -90,6 +102,9 @@ export default function Catalog() {
       onTypeChange={handleTypeChange}
     />
   );
+
+  const startItem = metaData ? (metaData.currentPage - 1) * metaData.pageSize + 1 : 0;
+  const endItem = metaData ? Math.min(metaData.currentPage * metaData.pageSize, metaData.totalCount) : 0;
 
   return (
     <Box>
@@ -177,8 +192,11 @@ export default function Catalog() {
           <Paper sx={{ mb: 2, p: 2 }}>
             <Sorting />
           </Paper>
+
+          {/* Products Section */}
           <Box sx={{ position: "relative", minHeight: 400 }}>
-            {isLoading && (
+            {/* Loading Overlay */}
+            {isFetching && !isLoading && (
               <Box
                 sx={{
                   position: "absolute",
@@ -186,25 +204,104 @@ export default function Catalog() {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  backgroundColor: "rgba(255, 255, 255, 0.7)",
                   backdropFilter: "blur(2px)",
-                  zIndex: 1,
+                  zIndex: 10,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Box sx={{ textAlign: "center" }}>
-                  <CircularProgress size={60} sx={{ mb: 2 }} />
-                  <Typography variant="h6" color="primary">
-                    Loading products...
-                  </Typography>
-                </Box>
+                <CircularProgress size={48} />
               </Box>
             )}
-            <ProductList products={products} />
+
+            {/* Initial Loading */}
+            {isLoading ? (
+              <Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+                  <Skeleton variant="text" width={200} height={40} />
+                  <Skeleton variant="rounded" width={100} height={32} />
+                </Box>
+                <Grid container spacing={3}>
+                  {[...Array(8)].map((_, index) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                      <Skeleton variant="rounded" height={380} />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            ) : (
+              <ProductList products={products} />
+            )}
           </Box>
-          <Pagination isLoading={isLoading} />
+
+          {/* Pagination Section */}
+          {metaData && metaData.totalCount > 0 && (
+            <Paper
+              elevation={2}
+              sx={{
+                mt: 4,
+                mb: 4,
+                p: { xs: 2, sm: 3 },
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 2,
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Inventory2Outlined color="action" fontSize="small" />
+                <Typography variant="body2" color="text.secondary">
+                  Showing <strong>{startItem}-{endItem}</strong> of{" "}
+                  <strong>{metaData.totalCount}</strong> products
+                </Typography>
+              </Box>
+
+              {metaData.totalPages > 1 && (
+                <>
+                  {!isSmall && <Divider orientation="vertical" flexItem />}
+                  <MuiPagination
+                    count={metaData.totalPages}
+                    page={metaData.currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                    size={isSmall ? "small" : "medium"}
+                    disabled={isFetching}
+                    showFirstButton={!isSmall}
+                    showLastButton={!isSmall}
+                    siblingCount={isSmall ? 0 : 1}
+                    sx={{
+                      "& .MuiPaginationItem-root": {
+                        opacity: isFetching ? 0.5 : 1,
+                        transition: "opacity 0.2s",
+                      },
+                    }}
+                  />
+                </>
+              )}
+            </Paper>
+          )}
+
+          {/* No Products Message */}
+          {!isLoading && products.length === 0 && (
+            <Paper
+              sx={{
+                p: 6,
+                textAlign: "center",
+                mt: 2,
+              }}
+            >
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No products found
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Try adjusting your search or filter criteria
+              </Typography>
+            </Paper>
+          )}
         </Grid>
       </Grid>
     </Box>
