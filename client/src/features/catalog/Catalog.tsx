@@ -14,8 +14,18 @@ import {
   Pagination as MuiPagination,
   Skeleton,
   Divider,
+  ButtonGroup,
+  Tooltip,
 } from "@mui/material";
-import { FilterList, Close, Inventory2Outlined } from "@mui/icons-material";
+import {
+  FilterList,
+  Close,
+  Inventory2Outlined,
+  FirstPage,
+  LastPage,
+  NavigateBefore,
+  NavigateNext,
+} from "@mui/icons-material";
 import { useState } from "react";
 import ProductList from "./ProductList";
 import Filters from "./Filters";
@@ -43,6 +53,9 @@ export default function Catalog() {
 
   const products = data?.products || [];
   const metaData = data?.metaData;
+
+  console.log("[Catalog Component] Products:", products.length);
+  console.log("[Catalog Component] MetaData:", metaData);
 
   const handleBrandChange = (brand: string) => {
     const currentBrands =
@@ -263,23 +276,78 @@ export default function Catalog() {
               {metaData.totalPages > 1 && (
                 <>
                   {!isSmall && <Divider orientation="vertical" flexItem />}
-                  <MuiPagination
-                    count={metaData.totalPages}
-                    page={metaData.currentPage}
-                    onChange={handlePageChange}
-                    color="primary"
-                    size={isSmall ? "small" : "medium"}
-                    disabled={isFetching}
-                    showFirstButton={!isSmall}
-                    showLastButton={!isSmall}
-                    siblingCount={isSmall ? 0 : 1}
+                  <Box
                     sx={{
-                      "& .MuiPaginationItem-root": {
-                        opacity: isFetching ? 0.5 : 1,
-                        transition: "opacity 0.2s",
-                      },
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      gap: 2,
+                      alignItems: "center",
                     }}
-                  />
+                  >
+                    {/* Navigation Buttons */}
+                    <ButtonGroup
+                      variant="outlined"
+                      size={isSmall ? "small" : "medium"}
+                      disabled={isFetching}
+                    >
+                      <Tooltip title="First Page">
+                        <Button
+                          onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, 1)}
+                          disabled={metaData.currentPage === 1 || isFetching}
+                          startIcon={<FirstPage />}
+                        >
+                          {!isSmall && "First"}
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="Previous Page">
+                        <Button
+                          onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, metaData.currentPage - 1)}
+                          disabled={metaData.currentPage === 1 || isFetching}
+                          startIcon={<NavigateBefore />}
+                        >
+                          {!isSmall && "Prev"}
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="Next Page">
+                        <Button
+                          onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, metaData.currentPage + 1)}
+                          disabled={metaData.currentPage === metaData.totalPages || isFetching}
+                          endIcon={<NavigateNext />}
+                        >
+                          {!isSmall && "Next"}
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="Last Page">
+                        <Button
+                          onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, metaData.totalPages)}
+                          disabled={metaData.currentPage === metaData.totalPages || isFetching}
+                          endIcon={<LastPage />}
+                        >
+                          {!isSmall && "Last"}
+                        </Button>
+                      </Tooltip>
+                    </ButtonGroup>
+
+                    {/* Page Numbers */}
+                    <MuiPagination
+                      count={metaData.totalPages}
+                      page={metaData.currentPage}
+                      onChange={handlePageChange}
+                      color="primary"
+                      size={isSmall ? "small" : "medium"}
+                      disabled={isFetching}
+                      showFirstButton={false}
+                      showLastButton={false}
+                      siblingCount={isSmall ? 0 : 1}
+                      boundaryCount={1}
+                      sx={{
+                        "& .MuiPaginationItem-root": {
+                          opacity: isFetching ? 0.5 : 1,
+                          transition: "opacity 0.2s",
+                        },
+                      }}
+                    />
+                  </Box>
                 </>
               )}
             </Paper>

@@ -29,38 +29,80 @@ export const inventoryApi = createApi({
   tagTypes: ["InventoryProducts"],
   endpoints: (builder) => ({
     fetchInventoryProducts: builder.query<PaginatedResponse, InventoryParams>({
-      queryFn: async (params, _queryApi, _extraOptions, fetchWithBQ) => {
+      query: (params) => {
         const searchParams = new URLSearchParams();
         searchParams.append("pageNumber", params.pageNumber.toString());
         searchParams.append("pageSize", params.pageSize.toString());
 
-        const result = await fetchWithBQ(`products?${searchParams.toString()}`);
+        return `products?${searchParams.toString()}`;
+      },
+      transformResponse: (response: Product[], meta) => {
+        console.log("[Inventory API] Raw response:", response);
+        console.log("[Inventory API] Meta object:", meta);
 
-        if (result.error) {
-          return { error: result.error };
+        let paginationHeader: string | null = null;
+
+        // Try to get the Pagination header from various possible locations
+        if (meta?.response) {
+          const headers = meta.response.headers;
+          console.log("[Inventory API] Headers object type:", typeof headers);
+          console.log("[Inventory API] Headers:", headers);
+
+          // Check if it's a Headers instance (has .get method)
+          if (typeof headers.get === 'function') {
+            paginationHeader = headers.get('Pagination') || headers.get('pagination');
+            console.log("[Inventory API] Header via .get():", paginationHeader);
+          }
+
+          // Check if headers is a plain object
+          if (!paginationHeader && typeof headers === 'object') {
+            // @ts-ignore - trying different possible key formats
+            paginationHeader = headers['Pagination'] || headers['pagination'] || headers['PAGINATION'];
+            console.log("[Inventory API] Header via object access:", paginationHeader);
+          }
+
+          // Try iterating if it's a Headers instance
+          if (!paginationHeader && typeof headers.entries === 'function') {
+            console.log("[Inventory API] All headers via iteration:");
+            for (const [key, value] of headers.entries()) {
+              console.log(`  ${key}: ${value}`);
+              if (key.toLowerCase() === 'pagination') {
+                paginationHeader = value;
+              }
+            }
+          }
         }
 
-        const products = result.data as Product[];
-        const paginationHeader = result.meta?.response?.headers.get("Pagination");
+        console.log("[Inventory API] Final pagination header:", paginationHeader);
 
-        let metaData: PaginationMetaData = {
-          currentPage: params.pageNumber,
-          totalPages: 1,
-          pageSize: params.pageSize,
-          totalCount: products.length,
-        };
+        let metaData: PaginationMetaData;
 
         if (paginationHeader) {
           try {
             metaData = JSON.parse(paginationHeader);
+            console.log("[Inventory API] ✅ Parsed metadata:", metaData);
           } catch (e) {
-            console.error("Failed to parse pagination header:", e);
+            console.error("[Inventory API] ❌ Failed to parse pagination header:", e);
+            // Fallback metadata
+            metaData = {
+              currentPage: 1,
+              totalPages: 1,
+              pageSize: 10,
+              totalCount: response.length,
+            };
           }
+        } else {
+          console.warn("[Inventory API] ⚠️ No pagination header found - using fallback");
+          // Fallback metadata
+          metaData = {
+            currentPage: 1,
+            totalPages: 1,
+            pageSize: 10,
+            totalCount: response.length,
+          };
         }
 
-        return {
-          data: { products, metaData },
-        };
+        return { products: response, metaData };
       },
       providesTags: ["InventoryProducts"],
     }),

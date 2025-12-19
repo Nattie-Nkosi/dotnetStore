@@ -24,7 +24,7 @@ export const catalogApi = createApi({
   tagTypes: ["Products"],
   endpoints: (builder) => ({
     fetchProducts: builder.query<PaginatedResponse, ProductParams>({
-      queryFn: async (params, _queryApi, _extraOptions, fetchWithBQ) => {
+      query: (params) => {
         const searchParams = new URLSearchParams();
 
         if (params.pageNumber) searchParams.append("pageNumber", params.pageNumber.toString());
@@ -34,33 +34,75 @@ export const catalogApi = createApi({
         if (params.brands) searchParams.append("brands", params.brands);
         if (params.types) searchParams.append("types", params.types);
 
-        const result = await fetchWithBQ(`products?${searchParams.toString()}`);
+        return `products?${searchParams.toString()}`;
+      },
+      transformResponse: (response: Product[], meta) => {
+        console.log("[Catalog API] Raw response:", response);
+        console.log("[Catalog API] Meta object:", meta);
 
-        if (result.error) {
-          return { error: result.error };
+        let paginationHeader: string | null = null;
+
+        // Try to get the Pagination header from various possible locations
+        if (meta?.response) {
+          const headers = meta.response.headers;
+          console.log("[Catalog API] Headers object type:", typeof headers);
+          console.log("[Catalog API] Headers:", headers);
+
+          // Check if it's a Headers instance (has .get method)
+          if (typeof headers.get === 'function') {
+            paginationHeader = headers.get('Pagination') || headers.get('pagination');
+            console.log("[Catalog API] Header via .get():", paginationHeader);
+          }
+
+          // Check if headers is a plain object
+          if (!paginationHeader && typeof headers === 'object') {
+            // @ts-ignore - trying different possible key formats
+            paginationHeader = headers['Pagination'] || headers['pagination'] || headers['PAGINATION'];
+            console.log("[Catalog API] Header via object access:", paginationHeader);
+          }
+
+          // Try iterating if it's a Headers instance
+          if (!paginationHeader && typeof headers.entries === 'function') {
+            console.log("[Catalog API] All headers via iteration:");
+            for (const [key, value] of headers.entries()) {
+              console.log(`  ${key}: ${value}`);
+              if (key.toLowerCase() === 'pagination') {
+                paginationHeader = value;
+              }
+            }
+          }
         }
 
-        const products = result.data as Product[];
-        const paginationHeader = result.meta?.response?.headers.get("Pagination");
+        console.log("[Catalog API] Final pagination header:", paginationHeader);
 
-        let metaData: PaginationMetaData = {
-          currentPage: params.pageNumber || 1,
-          totalPages: 1,
-          pageSize: params.pageSize || 8,
-          totalCount: products.length,
-        };
+        let metaData: PaginationMetaData;
 
         if (paginationHeader) {
           try {
             metaData = JSON.parse(paginationHeader);
+            console.log("[Catalog API] ✅ Parsed metadata:", metaData);
           } catch (e) {
-            console.error("Failed to parse pagination header:", e);
+            console.error("[Catalog API] ❌ Failed to parse pagination header:", e);
+            // Fallback metadata
+            metaData = {
+              currentPage: 1,
+              totalPages: 1,
+              pageSize: 8,
+              totalCount: response.length,
+            };
           }
+        } else {
+          console.warn("[Catalog API] ⚠️ No pagination header found - using fallback");
+          // Fallback metadata
+          metaData = {
+            currentPage: 1,
+            totalPages: 1,
+            pageSize: 8,
+            totalCount: response.length,
+          };
         }
 
-        return {
-          data: { products, metaData },
-        };
+        return { products: response, metaData };
       },
       providesTags: ["Products"],
     }),
