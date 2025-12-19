@@ -4,6 +4,7 @@ import { Product } from "../../app/models/product";
 interface InventoryParams {
   pageNumber: number;
   pageSize: number;
+  searchTerm?: string;
 }
 
 interface PaginationMetaData {
@@ -33,6 +34,10 @@ export const inventoryApi = createApi({
         const searchParams = new URLSearchParams();
         searchParams.append("pageNumber", params.pageNumber.toString());
         searchParams.append("pageSize", params.pageSize.toString());
+
+        if (params.searchTerm) {
+          searchParams.append("searchTerm", params.searchTerm);
+        }
 
         return `products?${searchParams.toString()}`;
       },

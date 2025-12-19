@@ -26,6 +26,8 @@ import {
   useTheme,
   ButtonGroup,
   Tooltip,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import {
   Edit,
@@ -36,8 +38,10 @@ import {
   LastPage,
   NavigateBefore,
   NavigateNext,
+  Search,
+  Clear,
 } from "@mui/icons-material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useFetchInventoryProductsQuery,
   useDeleteProductMutation,
@@ -46,17 +50,20 @@ import { Product } from "../../app/models/product";
 import ProductForm from "./ProductForm";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../app/store/store";
-import { setInventoryPageNumber } from "./inventorySlice";
+import { setInventoryPageNumber, setInventorySearchTerm } from "./inventorySlice";
 
 export default function Inventory() {
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
-  const { pageNumber, pageSize } = useAppSelector((state) => state.inventory);
+  const { pageNumber, pageSize, searchTerm } = useAppSelector((state) => state.inventory);
+
+  const [searchInput, setSearchInput] = useState(searchTerm);
 
   const { data, error, isLoading, isFetching } = useFetchInventoryProductsQuery({
     pageNumber,
     pageSize,
+    searchTerm,
   });
 
   const products = data?.products || [];
@@ -73,6 +80,22 @@ export default function Inventory() {
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(setInventorySearchTerm(searchInput));
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, dispatch]);
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(event.target.value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+  };
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
@@ -147,6 +170,30 @@ export default function Inventory() {
         <Button variant="contained" startIcon={<Add />} onClick={handleCreate}>
           Create Product
         </Button>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search products by name..."
+          value={searchInput}
+          onChange={handleSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search color="action" />
+              </InputAdornment>
+            ),
+            endAdornment: searchInput && (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={handleClearSearch} edge="end">
+                  <Clear />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
       </Box>
 
       <TableContainer component={Paper} sx={{ position: "relative" }}>
