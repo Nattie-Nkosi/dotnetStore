@@ -240,7 +240,10 @@ export default function NavBar({ darkMode, onThemeChange }: Props) {
                       }}
                     >
                       <MenuItem
-                        onClick={handleUserMenuClose}
+                        onClick={() => {
+                          handleUserMenuClose();
+                          navigate("/profile");
+                        }}
                         sx={{ py: 1.5, px: 2 }}
                       >
                         <ListItemIcon>
